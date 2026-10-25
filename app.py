@@ -10,25 +10,47 @@ st.set_page_config(page_title="Pooja Sharma Coaching Portal", page_icon="🎓", 
 USERS_FILE = "users.json"
 STUDENTS_FILE = "students.json"
 
-def load_data(filename):
-    if not os.path.exists(filename):
-        return [] if filename == STUDENTS_FILE else {}
+def load_users():
+    default_users = {"pooja": {"password": "12345", "role": "Admin"}}
+    if not os.path.exists(USERS_FILE):
+        return default_users
     try:
-        with open(filename, "r") as f:
+        with open(USERS_FILE, "r") as f:
             data = json.load(f)
+            if not isinstance(data, dict):
+                return default_users
+            # Ensure default pooja account always exists
+            if "pooja" not in data:
+                data["pooja"] = {"password": "12345", "role": "Admin"}
             return data
     except:
-        return [] if filename == STUDENTS_FILE else {}
+        return default_users
 
-def save_data(filename, data):
+def save_users(users):
     try:
-        with open(filename, "w") as f:
-            json.dump(data, f, indent=4)
+        with open(USERS_FILE, "w") as f:
+            json.dump(users, f, indent=4)
     except Exception as e:
-        st.error(f"Error saving data: {e}")
+        st.error(f"Error saving users: {e}")
+
+def load_students():
+    if not os.path.exists(STUDENTS_FILE):
+        return []
+    try:
+        with open(STUDENTS_FILE, "r") as f:
+            data = json.load(f)
+            return data if isinstance(data, list) else []
+    except:
+        return []
+
+def save_students(students):
+    try:
+        with open(STUDENTS_FILE, "w") as f:
+            json.dump(students, f, indent=4)
+    except Exception as e:
+        st.error(f"Error saving students: {e}")
 
 def generate_captcha():
-    # Simple 4 digit numbers captcha
     return ''.join(random.choice(string.digits) for _ in range(4))
 
 # Custom Education Theme CSS
@@ -71,13 +93,9 @@ if "recovered_password" not in st.session_state:
 if "edit_index" not in st.session_state:
     st.session_state.edit_index = None
 
-if "users_db" not in st.session_state:
-    st.session_state.users_db = load_data(USERS_FILE)
-if "students_db" not in st.session_state:
-    loaded_students = load_data(STUDENTS_FILE)
-    st.session_state.students_db = loaded_students if isinstance(loaded_students, list) else []
-
-users = st.session_state.users_db
+# Load persistent databases
+users = load_users()
+students_db = load_students()
 
 st.markdown("<h1 style='text-align: center; color: #38bdf8;'>🎓 POOJA SHARMA COACHING CENTER</h1>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; color: #94a3b8;'>Classes 1st to 12th | Excellence in Education</p>", unsafe_allow_html=True)
@@ -153,7 +171,6 @@ if not st.session_state.logged_in:
             reg_pass = st.text_input("Choose Password", type="password", key="r_pass")
             reg_repass = st.text_input("Re-enter Password", type="password", key="r_repass")
             
-            # Integrated 4-digit Captcha Box with Refresh Icon inside it
             cap_col1, cap_col2 = st.columns([4, 1])
             with cap_col1:
                 st.markdown(f"<div style='background-color: #1e293b; padding: 12px; border-radius: 8px; text-align: center; font-size: 26px; font-weight: bold; letter-spacing: 8px; color: #38bdf8; border: 1px dashed #6366f1;'>{st.session_state.captcha_code}</div>", unsafe_allow_html=True)
@@ -182,8 +199,7 @@ if not st.session_state.logged_in:
                     st.rerun()
                 else:
                     users[clean_reg_user] = {"password": reg_pass, "role": "Admin"}
-                    save_data(USERS_FILE, users)
-                    st.session_state.users_db = users
+                    save_users(users)
                     st.success("Account successfully ban gaya! Ab aap Login kar sakte hain.")
                     st.session_state.captcha_code = generate_captcha()
                     st.session_state.page_choice = "🔐 Login"
@@ -205,8 +221,8 @@ else:
     with st.expander("📝 Compact Student Data Feed Form", expanded=True):
         edit_data = {}
         is_editing = False
-        if st.session_state.edit_index is not None and st.session_state.edit_index < len(st.session_state.students_db):
-            edit_data = st.session_state.students_db[st.session_state.edit_index]
+        if st.session_state.edit_index is not None and st.session_state.edit_index < len(students_db):
+            edit_data = students_db[st.session_state.edit_index]
             is_editing = True
             st.info(f"Editing Student: {edit_data.get('Student Name', '')}")
 
@@ -296,22 +312,21 @@ else:
                     }
                     
                     if is_editing:
-                        st.session_state.students_db[st.session_state.edit_index] = new_student
+                        students_db[st.session_state.edit_index] = new_student
                         st.session_state.edit_index = None
                         st.success("Student data update ho gaya!")
                     else:
-                        st.session_state.students_db.append(new_student)
+                        students_db.append(new_student)
                         st.success("Student data save ho gaya!")
                     
-                    save_data(STUDENTS_FILE, st.session_state.students_db)
+                    save_students(students_db)
                     st.rerun()
 
     st.markdown("---")
     st.markdown("### 📋 Students Details")
     
-    current_students = load_data(STUDENTS_FILE)
-    if current_students and isinstance(current_students, list) and len(current_students) > 0:
-        for idx, student in enumerate(current_students):
+    if students_db and isinstance(students_db, list) and len(students_db) > 0:
+        for idx, student in enumerate(students_db):
             with st.expander(f"👤 {student.get('Student Name', 'N/A')} — {student.get('Class', 'N/A')} ({student.get('School', 'N/A')})"):
                 col_d1, col_d2, col_d3 = st.columns(3)
                 with col_d1:
@@ -334,9 +349,8 @@ else:
                         st.rerun()
                 with b2:
                     if st.button("🗑️ Delete", key=f"del_{idx}"):
-                        current_students.pop(idx)
-                        st.session_state.students_db = current_students
-                        save_data(STUDENTS_FILE, current_students)
+                        students_db.pop(idx)
+                        save_students(students_db)
                         if st.session_state.edit_index == idx:
                             st.session_state.edit_index = None
                         st.success("Student data delete ho gaya!")
