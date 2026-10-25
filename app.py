@@ -2,6 +2,7 @@ import streamlit as st
 import json
 import os
 import random
+import string
 
 st.set_page_config(page_title="Pooja Sharma Coaching Portal", page_icon="🎓", layout="wide")
 
@@ -20,6 +21,11 @@ def save_users(users):
     with open(USERS_FILE, "w") as f:
         json.dump(users, f, indent=4)
 
+def generate_captcha():
+    # Difficult Alphanumeric Captcha (uppercase, lowercase, digits)
+    chars = string.ascii_letters + string.digits
+    return ''.join(random.choice(chars) for _ in range(6))
+
 # Hide Streamlit header
 st.markdown("""
 <style>
@@ -36,7 +42,7 @@ if "username" not in st.session_state:
 if "page_choice" not in st.session_state:
     st.session_state.page_choice = "🔐 Login"
 if "captcha_code" not in st.session_state:
-    st.session_state.captcha_code = str(random.randint(1000, 9999))
+    st.session_state.captcha_code = generate_captcha()
 
 users = load_users()
 
@@ -80,9 +86,16 @@ if not st.session_state.logged_in:
             reg_pass = st.text_input("Choose Password", type="password", key="r_pass")
             reg_repass = st.text_input("Re-enter Password", type="password", key="r_repass")
             
-            # Captcha Section
-            st.markdown(f"### 🔏 Captcha Code: `{st.session_state.captcha_code}`")
-            user_captcha = st.text_input("Enter Captcha Code Above", key="r_captcha")
+            # Stylized Captcha Display & Refresh Button
+            c1, c2 = st.columns([3, 1])
+            with c1:
+                st.markdown(f"<div style='background-color: #262730; padding: 10px; border-radius: 8px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 4px; color: #00ffcc;'>{st.session_state.captcha_code}</div>", unsafe_allow_html=True)
+            with c2:
+                if st.button("🔄 Refresh"):
+                    st.session_state.captcha_code = generate_captcha()
+                    st.rerun()
+            
+            user_captcha = st.text_input("Enter Code Shown Above", key="r_captcha")
             
             if st.button("Register Account", type="primary", use_container_width=True):
                 if not reg_user or not reg_pass or not reg_repass or not user_captcha:
@@ -90,30 +103,7 @@ if not st.session_state.logged_in:
                 elif reg_pass != reg_repass:
                     st.error("Passwords match nahi kar rahe hain!")
                 elif user_captcha != st.session_state.captcha_code:
-                    st.error("Galat Captcha! Kripya sahi captcha dalein.")
-                    st.session_state.captcha_code = str(random.randint(1000, 9999))
+                    st.error("Galat Code! Kripya sahi code enter karein.")
+                    st.session_state.captcha_code = generate_captcha()
                 elif reg_user in users:
-                    st.error("Yeh Username pehle se maujood hai! Dusra chunein.")
-                    st.session_state.captcha_code = str(random.randint(1000, 9999))
-                else:
-                    users[reg_user] = {"password": reg_pass, "role": "Student"}
-                    save_users(users)
-                    st.success("Account successfully ban gaya! Ab aap Login kar sakte hain.")
-                    # Reset captcha and switch back to login page automatically
-                    st.session_state.captcha_code = str(random.randint(1000, 9999))
-                    st.session_state.page_choice = "🔐 Login"
-                    st.rerun()
-
-else:
-    st.sidebar.title(f"👤 {st.session_state.username}")
-    st.sidebar.write(f"**Role:** {users.get(st.session_state.username, {}).get('role', 'Student')}")
-    if st.sidebar.button("Logout", use_container_width=True):
-        st.session_state.logged_in = False
-        st.session_state.username = ""
-        st.rerun()
-
-    st.subheader("Welcome to Student Portal")
-    st.success(f"Hello {st.session_state.username}, aapka swagat hai!")
-    
-    st.markdown("### 📊 Registered System Users")
-    st.dataframe(users, use_container_width=True)
+                    st.error("Yeh Username pehle se maujood
