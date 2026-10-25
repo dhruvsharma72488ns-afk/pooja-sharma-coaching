@@ -19,31 +19,13 @@ def save_users(users):
     with open(USERS_FILE, "w") as f:
         json.dump(users, f, indent=4)
 
-# Custom Styling to match your original HTML design
 st.markdown("""
 <style>
-    .main {
-        background-color: #f4f6f9;
-    }
     .stAppHeader {
         display: none;
     }
-    .card-box {
-        background-color: white;
-        padding: 30px;
-        border-radius: 12px;
-        box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
-        max-width: 500px;
-        margin: auto;
-    }
-    .title-header {
-        color: #2c3e50;
-        text-align: center;
-        font-weight: bold;
-        margin-bottom: 20px;
-    }
 </style>
-""", unsafe_allow_html=unsafe_allow_html:=True)
+""", unsafe_allow_html=True)
 
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
@@ -106,7 +88,7 @@ else:
         st.session_state.username = ""
         st.rerun()
 
-    st.subheader(" Welcome to Student Portal")
+    st.subheader("Welcome to Student Portal")
     st.success(f"Hello {st.session_state.username}, welcome back to Pooja Sharma Coaching Center portal.")
     
     st.markdown("### 📊 Registered System Users")
