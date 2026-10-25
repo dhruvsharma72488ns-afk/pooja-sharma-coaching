@@ -51,6 +51,8 @@ if "recovered_password" not in st.session_state:
     st.session_state.recovered_password = None
 if "edit_index" not in st.session_state:
     st.session_state.edit_index = None
+if "show_form" not in st.session_state:
+    st.session_state.show_form = True
 
 if "users_db" not in st.session_state:
     st.session_state.users_db = load_data(USERS_FILE)
@@ -171,117 +173,48 @@ if not st.session_state.logged_in:
                     st.rerun()
 
 else:
-    with st.sidebar:
+    # Header Control Bar
+    top_col1, top_col2 = st.columns([3, 1])
+    with top_col1:
         st.markdown("### 👩‍🏫 WELCOME POOJA MAM")
+    with top_col2:
         if st.button("🚪 Logout", use_container_width=True):
             st.session_state.logged_in = False
             st.session_state.username = ""
             st.session_state.edit_index = None
             st.rerun()
-        st.markdown("---")
-        st.markdown("#### 📝 Student Data Feed Form")
-        
-        edit_data = {}
-        if st.session_state.edit_index is not None and st.session_state.edit_index < len(st.session_state.students_db):
-            edit_data = st.session_state.students_db[st.session_state.edit_index]
-            st.info(f"Editing: {edit_data.get('Student Name', '')}")
-
-        with st.form("student_form", clear_on_submit=False):
-            s_name = st.text_input("Student Name *", value=edit_data.get("Student Name", ""))
             
-            class_options = [f"{i}th Class" if i > 3 else (f"{i}st Class" if i==1 else (f"{i}nd Class" if i==2 else f"{i}rd Class")) for i in range(1, 13)]
-            default_class_idx = class_options.index(edit_data.get("Class")) if edit_data.get("Class") in class_options else 0
-            s_class = st.selectbox("Class *", class_options, index=default_class_idx)
-            
-            s_school = st.text_input("School Name *", value=edit_data.get("School", ""))
-            s_subject = st.text_input("Subject", value=edit_data.get("Subject", ""))
-            s_phone = st.text_input("Student Phone Number", value=edit_data.get("Phone", ""))
-            
-            st.markdown("---")
-            st.markdown("**Parents Details**")
-            m_name = st.text_input("Mother Name", value=edit_data.get("Mother Name", ""))
-            m_phone = st.text_input("Mother Contact No", value=edit_data.get("Mother Contact", ""))
-            f_name = st.text_input("Father Name", value=edit_data.get("Father Name", ""))
-            f_phone = st.text_input("Father Contact No", value=edit_data.get("Father Contact", ""))
-            s_address = st.text_area("Address *", value=edit_data.get("Address", ""))
-            
-            st.markdown("---")
-            st.markdown("**Fee Details**")
-            fee_status = st.text_input("Fee Status / Amount", value=edit_data.get("Fee Status", ""))
-            
-            default_date = datetime.date.today()
-            if edit_data.get("Fee Date"):
-                try:
-                    default_date = datetime.datetime.strptime(edit_data.get("Fee Date"), "%Y-%m-%d").date()
-                except:
-                    pass
-            fee_date = st.date_input("Fee Date", value=default_date)
-            
-            btn_label = "Update Student Data" if st.session_state.edit_index is not None else "Save Student Data"
-            submitted = st.form_submit_button(btn_label, type="primary")
-            
-            if submitted:
-                missing_fields = []
-                if not s_name.strip():
-                    missing_fields.append("Student Name")
-                if not s_school.strip():
-                    missing_fields.append("School Name")
-                if not s_address.strip():
-                    missing_fields.append("Address")
-                if not s_phone.strip() and not m_phone.strip() and not f_phone.strip():
-                    missing_fields.append("At least one Phone Number (Student / Mother / Father)")
-                
-                if missing_fields:
-                    st.error(f"⚠️ Kripya yeh zaroori fields bharein: {', '.join(missing_fields)}")
-                else:
-                    new_student = {
-                        "Student Name": s_name.strip(),
-                        "Class": s_class,
-                        "School": s_school.strip(),
-                        "Subject": s_subject.strip(),
-                        "Phone": s_phone.strip() if s_phone.strip() else (m_phone.strip() if m_phone.strip() else f_phone.strip()),
-                        "Mother Name": m_name.strip(),
-                        "Mother Contact": m_phone.strip(),
-                        "Father Name": f_name.strip(),
-                        "Father Contact": f_phone.strip(),
-                        "Address": s_address.strip(),
-                        "Fee Status": fee_status.strip(),
-                        "Fee Date": str(fee_date)
-                    }
-                    
-                    if st.session_state.edit_index is not None:
-                        st.session_state.students_db[st.session_state.edit_index] = new_student
-                        st.session_state.edit_index = None
-                        st.success("Student data update ho gaya!")
-                    else:
-                        st.session_state.students_db.append(new_student)
-                        st.success("Student data save ho gaya!")
-                    
-                    save_data(STUDENTS_FILE, st.session_state.students_db)
-                    st.rerun()
-
-    st.markdown("### 📋 Students Details")
+    st.markdown("---")
     
-    current_students = load_data(STUDENTS_FILE)
-    if current_students and isinstance(current_students, list) and len(current_students) > 0:
-        for idx, student in enumerate(current_students):
-            with st.expander(f"👤 {student.get('Student Name', 'N/A')} — {student.get('Class', 'N/A')} ({student.get('School', 'N/A')})"):
-                col_d1, col_d2, col_d3 = st.columns(3)
-                with col_d1:
-                    st.write(f"**Subject:** {student.get('Subject', '-')}")
-                    st.write(f"**Phone:** {student.get('Phone', '-')}")
-                    st.write(f"**Address:** {student.get('Address', '-')}")
-                with col_d2:
-                    st.write(f"**Mother Name:** {student.get('Mother Name', '-')}")
-                    st.write(f"**Mother Contact:** {student.get('Mother Contact', '-')}")
-                    st.write(f"**Father Name:** {student.get('Father Name', '-')}")
-                with col_d3:
-                    st.write(f"**Father Contact:** {student.get('Father Contact', '-')}")
-                    st.write(f"**Fee Status:** {student.get('Fee Status', '-')}")
-                    st.write(f"**Fee Date:** {student.get('Fee Date', '-')}")
+    # Toggle button to show/hide form
+    btn_text = "👁️ Hide Data Feed Form" if st.session_state.show_form else "📝 Show Data Feed Form"
+    if st.button(btn_text):
+        st.session_state.show_form = not st.session_state.show_form
+        st.rerun()
+        
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # Main Grid Layout
+    if st.session_state.show_form:
+        form_col, data_col = st.columns([1.2, 2])
+    else:
+        data_col = st.container()
+
+    # FORM SECTION
+    if st.session_state.show_form:
+        with form_col:
+            st.markdown("#### 📝 Student Data Feed Form")
+            
+            edit_data = {}
+            if st.session_state.edit_index is not None and st.session_state.edit_index < len(st.session_state.students_db):
+                edit_data = st.session_state.students_db[st.session_state.edit_index]
+                st.info(f"Editing: {edit_data.get('Student Name', '')}")
+
+            with st.form("student_form", clear_on_submit=False):
+                s_name = st.text_input("Student Name *", value=edit_data.get("Student Name", ""))
                 
-                b1, b2, _ = st.columns([1, 1, 4])
-                with b1:
-                    if st.button("✏️ Edit", key=f"edit_{idx}"):
-                        st.session_state.edit_index = idx
-                        st.rerun
+                class_options = [f"{i}th Class" if i > 3 else (f"{i}st Class" if i==1 else (f"{i}nd Class" if i==2 else f"{i}rd Class")) for i in range(1, 13)]
+                default_class_idx = class_options.index(edit_data.get("Class")) if edit_data.get("Class") in class_options else 0
+                s_class = st.selectbox("Class *", class_options, index=default_class_idx)
+                
+                s_school = st.text_input("School Name *", value=edit_data.get("School", ""))
