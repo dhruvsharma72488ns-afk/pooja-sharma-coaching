@@ -1,100 +1,88 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+import streamlit as st
 import json
 import os
 
-app = Flask(__name__)
-app.secret_key = 'pooja_sharma_coaching_secret_key_fixed'
+st.set_page_config(page_title="Pooja Sharma Coaching", page_icon="🎓", layout="wide")
 
-DB_FILE = 'users.json'
+USERS_FILE = "users.json"
 
+# Helper functions to handle JSON
 def load_users():
-    if not os.path.exists(DB_FILE):
+    if not os.path.exists(USERS_FILE):
         return {}
     try:
-        with open(DB_FILE, 'r') as f:
+        with open(USERS_FILE, "r") as f:
             return json.load(f)
-    except Exception:
+    except:
         return {}
 
 def save_users(users):
-    with open(DB_FILE, 'w') as f:
+    with open(USERS_FILE, "w") as f:
         json.dump(users, f, indent=4)
 
-@app.route('/')
-def home():
-    if 'user' in session:
-        return redirect(url_for('dashboard'))
-    return redirect(url_for('login'))
+# Session state initialization
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+if "username" not in st.session_state:
+    st.session_state.username = ""
 
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    if request.method == 'POST':
-        username = request.form.get('username', '').strip()
-        password = request.form.get('password', '')
+# Main App Logic
+st.title("🎓 POOJA SHARMA COACHING CENTER")
+st.markdown("---")
 
-        if not username or not password:
-            flash('All fields are required!', 'danger')
-            return redirect(url_for('register'))
+users = load_users()
 
-        users = load_users()
+if not st.session_state.logged_in:
+    tab1, tab2, tab3 = st.tabs(["🔐 Login", "📝 Register", "🔑 Recover Password"])
 
-        if username in users:
-            flash('This username is already registered!', 'danger')
-            return redirect(url_for('register'))
+    with tab1:
+        st.subheader("Login to Your Account")
+        login_user = st.text_input("Username", key="l_user")
+        login_pass = st.text_input("Password", type="password", key="l_pass")
+        if st.button("Login", type="primary"):
+            if login_user in users and users[login_user]["password"] == login_pass:
+                st.session_state.logged_in = True
+                st.session_state.username = login_user
+                st.success("Login Successful!")
+                st.rerun()
+            else:
+                st.error("Invalid Username or Password")
 
-        # Save username and direct plain password to JSON database permanently
-        users[username] = password
-        save_users(users)
+    with tab2:
+        st.subheader("Create a New Account")
+        reg_user = st.text_input("Choose Username", key="r_user")
+        reg_pass = st.text_input("Choose Password", type="password", key="r_pass")
+        reg_role = st.selectbox("Role", ["Student", "Teacher", "Admin"])
+        if st.button("Register"):
+            if not reg_user or not reg_pass:
+                st.warning("Please fill all fields")
+            elif reg_user in users:
+                st.error("Username already exists!")
+            else:
+                users[reg_user] = {"password": reg_pass, "role": reg_role}
+                save_users(users)
+                st.success("Account registered successfully! Please login.")
 
-        flash('Account created successfully! You can now login.', 'success')
-        return redirect(url_for('login'))
+    with tab3:
+        st.subheader("Recover Password")
+        rec_user = st.text_input("Enter Username", key="rec_user")
+        if st.button("Get Password"):
+            if rec_user in users:
+                st.info(f"Your password is: **{users[rec_user]['password']}**")
+            else:
+                st.error("Username not found!")
 
-    return render_template('register.html')
+else:
+    st.sidebar.title(f"Welcome, {st.session_state.username}!")
+    st.sidebar.markdown(f"**Role:** {users.get(st.session_state.username, {}).get('role', 'User')}")
+    
+    if st.sidebar.button("Logout"):
+        st.session_state.logged_in = False
+        st.session_state.username = ""
+        st.rerun()
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        username = request.form.get('username', '').strip()
-        password = request.form.get('password', '')
-
-        users = load_users()
-
-        if username in users and users[username] == password:
-            session['user'] = username
-            return redirect(url_for('dashboard'))
-        else:
-            flash('Invalid username or password! Please try again.', 'danger')
-            return redirect(url_for('login'))
-
-    return render_template('index.html')
-
-@app.route('/forgot', methods=['GET', 'POST'])
-def forgot():
-    if request.method == 'POST':
-        username = request.form.get('username', '').strip()
-
-        users = load_users()
-
-        if username in users:
-            user_password = users[username]
-            return render_template('forgot.html', recovered_password=user_password, username=username)
-        else:
-            flash('This username is not registered!', 'danger')
-            return redirect(url_for('forgot'))
-
-    return render_template('forgot.html')
-
-@app.route('/dashboard')
-def dashboard():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    return render_template('dashboard.html')
-
-@app.route('/logout')
-def logout():
-    session.clear()
-    flash('You have been logged out successfully.', 'success')
-    return redirect(url_for('login'))
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    st.subheader("📌 Student Management Dashboard")
+    st.write("Welcome to the Pooja Sharma Coaching App.")
+    
+    # Simple JSON data display
+    st.json(users)
