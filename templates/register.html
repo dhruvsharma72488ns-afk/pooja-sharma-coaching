@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account - Pooja Sharma Coaching</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { 
+            background: linear-gradient(rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.75)), 
+                        url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=1200&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px 0;
+        }
+        .header { text-align: center; margin-bottom: 15px; color: #ffffff; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+        .card { background: rgba(255, 255, 255, 0.95); padding: 30px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.3); width: 360px; }
+        .card h2 { margin-bottom: 15px; text-align: center; color: #1e293b; }
+        .input-group { margin-bottom: 12px; position: relative; }
+        .input-group label { display: block; margin-bottom: 4px; font-weight: 600; color: #334155; font-size: 14px; }
+        .input-group input { width: 100%; padding: 9px 38px 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; }
+        
+        .password-container { position: relative; display: flex; align-items: center; }
+        .toggle-password { position: absolute; right: 12px; cursor: pointer; user-select: none; font-size: 16px; color: #64748b; }
+
+        .captcha-box { display: flex; align-items: center; justify-content: space-between; background: #e2e8f0; padding: 8px 12px; border-radius: 6px; margin-bottom: 8px; }
+        .captcha-text { font-family: 'Courier New', Courier, monospace; font-size: 24px; font-weight: bold; letter-spacing: 6px; color: #1e293b; text-decoration: line-through; user-select: none; }
+        .refresh-btn { cursor: pointer; font-size: 18px; color: #2563eb; font-weight: bold; user-select: none; transition: transform 0.2s; }
+
+        .btn { width: 100%; padding: 11px; background-color: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; margin-top: 10px; }
+        .flash { text-align: center; margin-bottom: 12px; font-size: 13px; font-weight: 600; padding: 8px; border-radius: 6px; }
+        .flash-danger { color: #dc2626; background-color: #fee2e2; }
+        .link { text-align: center; margin-top: 15px; font-size: 14px; color: #475569; }
+        .link a { color: #2563eb; text-decoration: none; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Pooja Sharma Coaching</h1>
+        <p>Student Registration Portal</p>
+    </div>
+
+    <div class="card">
+        <h2>Create Account</h2>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="flash flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <form action="/register" method="POST" onsubmit="return validateForm()">
+            <!-- Name (Username) -->
+            <div class="input-group">
+                <label for="username">Name (Username)</label>
+                <input type="text" id="username" name="username" required placeholder="Enter Your Name">
+            </div>
+
+            <!-- Password -->
+            <div class="input-group">
+                <label for="password">Password</label>
+                <div class="password-container">
+                    <input type="password" id="password" name="password" required placeholder="Enter Password">
+                    <span class="toggle-password" id="eyeIcon1" onclick="toggleVisibility('password', 'eyeIcon1')">👁️</span>
+                </div>
+            </div>
+
+            <!-- Re-Password -->
+            <div class="input-group">
+                <label for="re_password">Re-Password</label>
+                <div class="password-container">
+                    <input type="password" id="re_password" name="re_password" required placeholder="Confirm Password">
+                    <span class="toggle-password" id="eyeIcon2" onclick="toggleVisibility('re_password', 'eyeIcon2')">👁️</span>
+                </div>
+            </div>
+
+            <!-- 4-Digit Captcha -->
+            <div class="input-group">
+                <label>Captcha Verification (4 Digits)</label>
+                <div class="captcha-box">
+                    <span id="captchaDisplay" class="captcha-text"></span>
+                    <span class="refresh-btn" onclick="generate4DigitCaptcha()" title="Change Captcha">↻</span>
+                </div>
+                <input type="hidden" id="generated_captcha" name="generated_captcha">
+                <input type="text" id="captcha_input" name="captcha_input" required placeholder="Enter 4-digit Captcha">
+            </div>
+
+            <button type="submit" class="btn">Verify & Create Account</button>
+        </form>
+
+        <div class="link">
+            Pehle se account hai? <a href="/login">Login Karein</a>
+        </div>
+    </div>
+
+    <script>
+        function toggleVisibility(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.innerText = '🙈';
+            } else {
+                input.type = 'password';
+                icon.innerText = '👁️';
+            }
+        }
+
+        function generate4DigitCaptcha() {
+            const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            let captcha = '';
+            for (let i = 0; i < 4; i++) {
+                captcha += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            document.getElementById('captchaDisplay').innerText = captcha;
+            document.getElementById('generated_captcha').value = captcha;
+            document.getElementById('captcha_input').value = '';
+        }
+
+        function validateForm() {
+            const pass = document.getElementById('password').value;
+            const rePass = document.getElementById('re_password').value;
+            const userCaptcha = document.getElementById('captcha_input').value.trim();
+            const genCaptcha = document.getElementById('generated_captcha').value;
+
+            if (pass !== rePass) {
+                alert("Password aur Re-Password match nahi kar rahe hain!");
+                generate4DigitCaptcha();
+                return false;
+            }
+
+            if (userCaptcha !== genCaptcha) {
+                alert("Galat Captcha! Naya captcha try karein.");
+                generate4DigitCaptcha();
+                return false;
+            }
+
+            return true;
+        }
+
+        window.onload = function() {
+            generate4DigitCaptcha();
+        };
+    </script>
+
+</body>
+</html>

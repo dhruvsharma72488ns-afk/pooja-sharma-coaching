@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - POOJA SHARMA COACHING</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { 
+            background: linear-gradient(rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.75)), 
+                        url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=1200&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px 0;
+        }
+        .header { text-align: center; margin-bottom: 15px; color: #ffffff; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+        .header h1 { font-size: 32px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; }
+        .card { background: rgba(255, 255, 255, 0.95); padding: 30px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.3); width: 360px; }
+        .card h2 { margin-bottom: 15px; text-align: center; color: #1e293b; }
+        .input-group { margin-bottom: 15px; position: relative; }
+        .input-group label { display: block; margin-bottom: 4px; font-weight: 600; color: #334155; font-size: 14px; }
+        .input-group input { width: 100%; padding: 10px 40px 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; background-color: #f8fafc; }
+        
+        .password-container { position: relative; display: flex; align-items: center; }
+        .toggle-password { 
+            position: absolute; 
+            right: 12px; 
+            cursor: pointer; 
+            user-select: none; 
+            font-size: 18px; 
+            color: #64748b; 
+        }
+
+        .btn { width: 100%; padding: 11px; background-color: #16a34a; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; margin-top: 10px; }
+        .btn:hover { background-color: #15803d; }
+        .flash { text-align: center; margin-bottom: 12px; font-size: 13px; font-weight: 600; padding: 8px; border-radius: 6px; }
+        .flash-danger { color: #dc2626; background-color: #fee2e2; }
+        .flash-success { color: #16a34a; background-color: #dcfce7; }
+        .link { text-align: center; margin-top: 12px; font-size: 14px; color: #475569; }
+        .link a { color: #2563eb; text-decoration: none; font-weight: bold; }
+        .forgot-link { text-align: right; margin-top: -8px; margin-bottom: 12px; font-size: 12px; }
+        .forgot-link a { color: #ef4444; text-decoration: none; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>POOJA SHARMA COACHING</h1>
+        <p>Welcome to Student Portal</p>
+    </div>
+
+    <div class="card">
+        <h2>Login</h2>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="flash flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <form action="/login" method="POST">
+            <div class="input-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required placeholder="Enter Username">
+            </div>
+
+            <div class="input-group">
+                <label for="password">Password</label>
+                <div class="password-container">
+                    <input type="password" id="password" name="password" required placeholder="Enter Password">
+                    <span class="toggle-password" id="eyeIcon" onclick="togglePasswordVisibility()">👁️</span>
+                </div>
+            </div>
+
+            <div class="forgot-link">
+                <a href="/forgot">Forgot Password?</a>
+            </div>
+
+            <button type="submit" class="btn">Login</button>
+        </form>
+
+        <div class="link">
+            Don't have an account? <a href="/register">Create Account</a>
+        </div>
+    </div>
+
+    <script>
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('password');
+            const eyeIcon = document.getElementById('eyeIcon');
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.innerText = '🙈';
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.innerText = '👁️';
+            }
+        }
+    </script>
+
+</body>
+</html>

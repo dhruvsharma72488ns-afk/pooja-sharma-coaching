@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forgot Password - Pooja Sharma Coaching</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { 
+            background: linear-gradient(rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.75)), 
+                        url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=1200&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px 0;
+        }
+        .header { text-align: center; margin-bottom: 15px; color: #ffffff; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+        .card { background: rgba(255, 255, 255, 0.95); padding: 30px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.3); width: 360px; text-align: center; }
+        .card h2 { margin-bottom: 10px; color: #1e293b; }
+        .card p { font-size: 13px; color: #64748b; margin-bottom: 15px; }
+        .input-group { margin-bottom: 15px; text-align: left; }
+        .input-group label { display: block; margin-bottom: 4px; font-weight: 600; color: #334155; font-size: 14px; }
+        .input-group input { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; background-color: #f8fafc; }
+
+        .btn { width: 100%; padding: 11px; background-color: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 15px; font-weight: bold; margin-top: 5px; text-decoration: none; display: inline-block; }
+        .btn:hover { background-color: #1d4ed8; }
+        
+        .result-box { background: #dcfce7; border: 1px solid #22c55e; padding: 15px; border-radius: 8px; margin-bottom: 15px; color: #16a34a; font-weight: bold; font-size: 16px; word-break: break-all; }
+        
+        .flash { text-align: center; margin-bottom: 12px; font-size: 13px; font-weight: 600; padding: 8px; border-radius: 6px; }
+        .flash-danger { color: #dc2626; background-color: #fee2e2; }
+        
+        .link { margin-top: 15px; font-size: 14px; color: #475569; }
+        .link a { color: #2563eb; text-decoration: none; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Pooja Sharma Coaching</h1>
+        <p>Password Recovery Portal</p>
+    </div>
+
+    <div class="card">
+        <h2>Recover Password</h2>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="flash flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        {% if recovered_password %}
+            <p>Password for username <b>{{ username }}</b>:</p>
+            <div class="result-box">
+                Your Password = {{ recovered_password }}
+            </div>
+            <a href="/login" class="btn">Back to Login</a>
+        {% else %}
+            <p>Enter your registered Username to view your password.</p>
+            <form action="/forgot" method="POST">
+                <div class="input-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required placeholder="Enter Your Username">
+                </div>
+
+                <button type="submit" class="btn" style="background-color: #ef4444;">Get Password</button>
+            </form>
+
+            <div class="link">
+                Back to Login? <a href="/login">Login Here</a>
+            </div>
+        {% endif %}
+    </div>
+
+</body>
+</html>
