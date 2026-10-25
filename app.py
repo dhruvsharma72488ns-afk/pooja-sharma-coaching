@@ -31,10 +31,29 @@ def generate_captcha():
     chars = string.ascii_letters + string.digits
     return ''.join(random.choice(chars) for _ in range(6))
 
+# Custom Education Theme CSS
 st.markdown("""
 <style>
     .stAppHeader {
         display: none;
+    }
+    .stApp {
+        background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+        color: #f8fafc;
+    }
+    .stExpander {
+        background-color: rgba(30, 41, 59, 0.7);
+        border: 1px solid rgba(99, 102, 241, 0.3);
+        border-radius: 12px;
+    }
+    div[data-testid="stForm"] {
+        background-color: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(129, 140, 248, 0.2);
+        border-radius: 10px;
+        padding: 15px;
+    }
+    h1, h2, h3 {
+        color: #38bdf8 !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -60,8 +79,8 @@ if "students_db" not in st.session_state:
 
 users = st.session_state.users_db
 
-st.markdown("<h1 style='text-align: center; color: #1e3a8a;'>🎓 POOJA SHARMA COACHING CENTER</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; color: #6b7280;'>Classes 1st to 12th | Excellence in Education</p>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; color: #38bdf8;'>🎓 POOJA SHARMA COACHING CENTER</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #94a3b8;'>Classes 1st to 12th | Excellence in Education</p>", unsafe_allow_html=True)
 st.markdown("---")
 
 if not st.session_state.logged_in:
@@ -136,7 +155,7 @@ if not st.session_state.logged_in:
             
             c1, c2 = st.columns([4, 1])
             with c1:
-                st.markdown(f"<div style='background-color: #262730; padding: 10px; border-radius: 8px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 4px; color: #00ffcc;'>{st.session_state.captcha_code}</div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='background-color: #1e293b; padding: 10px; border-radius: 8px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 4px; color: #38bdf8;'>{st.session_state.captcha_code}</div>", unsafe_allow_html=True)
             with c2:
                 st.markdown("<br>", unsafe_allow_html=True)
                 if st.button("🔄"):
@@ -183,7 +202,6 @@ else:
             
     st.markdown("---")
     
-    # Compact Form inside Expander
     with st.expander("📝 Compact Student Data Feed Form", expanded=True):
         edit_data = {}
         is_editing = False
@@ -222,7 +240,6 @@ else:
                 fee_date = st.date_input("Fee Date", value=default_date)
                 s_address = st.text_input("Address *", value=edit_data.get("Address", ""))
 
-            # Action Buttons Row
             btn_label = "Update Student Data" if is_editing else "Save Student Data"
             
             if is_editing:
