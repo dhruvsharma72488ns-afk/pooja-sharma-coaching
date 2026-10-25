@@ -31,7 +31,7 @@ def generate_captcha():
     chars = string.ascii_letters + string.digits
     return ''.join(random.choice(chars) for _ in range(6))
 
-# Custom Education Theme CSS with red glowing borders for missing fields prompt
+# Custom Education Theme CSS
 st.markdown("""
 <style>
     .stAppHeader {
@@ -141,7 +141,7 @@ if not st.session_state.logged_in:
             st.success(f"Your Password = **{st.session_state.recovered_password}**")
             
             st.markdown("<br>", unsafe_allow_html=True)
-            if st.button("🔙 Back to Login", use_container_width=True):
+            if st.button("🔙 Back to Login", type="primary", use_container_width=True):
                 st.session_state.recovered_password = None
                 st.session_state.page_choice = "🔐 Login"
                 st.rerun()
@@ -216,7 +216,7 @@ else:
             with fc1:
                 s_name = st.text_input("Student Name *", value=edit_data.get("Student Name", ""))
                 class_options = [f"{i}th Class" if i > 3 else (f"{i}st Class" if i==1 else (f"{i}nd Class" if i==2 else f"{i}rd Class")) for i in range(1, 13)]
-                default_class_idx = class_options.index(edit_data.get("Class")) if edit_data.get("Class"] in class_options else 0
+                default_class_idx = class_options.index(edit_data.get("Class")) if edit_data.get("Class") in class_options else 0
                 s_class = st.selectbox("Class *", class_options, index=default_class_idx)
                 s_school = st.text_input("School Name *", value=edit_data.get("School", ""))
                 s_subject = st.text_input("Subject *", value=edit_data.get("Subject", ""))
