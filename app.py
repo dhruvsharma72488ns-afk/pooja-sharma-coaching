@@ -84,11 +84,12 @@ if not st.session_state.logged_in:
             reg_pass = st.text_input("Choose Password", type="password", key="r_pass")
             reg_repass = st.text_input("Re-enter Password", type="password", key="r_repass")
             
-            c1, c2 = st.columns([3, 1])
+            c1, c2 = st.columns([4, 1])
             with c1:
                 st.markdown(f"<div style='background-color: #262730; padding: 10px; border-radius: 8px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 4px; color: #00ffcc;'>{st.session_state.captcha_code}</div>", unsafe_allow_html=True)
             with c2:
-                if st.button("🔄 Refresh"):
+                st.markdown("<br>", unsafe_allow_html=True)
+                if st.button("🔄"):
                     st.session_state.captcha_code = generate_captcha()
                     st.rerun()
             
@@ -99,12 +100,16 @@ if not st.session_state.logged_in:
                     st.warning("Sabhi fields bharna zaroori hai!")
                 elif reg_pass != reg_repass:
                     st.error("Passwords match nahi kar rahe hain!")
+                    st.session_state.captcha_code = generate_captcha()
+                    st.rerun()
                 elif user_captcha != st.session_state.captcha_code:
                     st.error("Galat Code! Kripya sahi code enter karein.")
                     st.session_state.captcha_code = generate_captcha()
+                    st.rerun()
                 elif reg_user in users:
                     st.error("Yeh Username pehle se maujood hai! Dusra chunein.")
                     st.session_state.captcha_code = generate_captcha()
+                    st.rerun()
                 else:
                     users[reg_user] = {"password": reg_pass, "role": "Student"}
                     save_users(users)
