@@ -28,8 +28,8 @@ def save_data(filename, data):
         st.error(f"Error saving data: {e}")
 
 def generate_captcha():
-    chars = string.ascii_letters + string.digits
-    return ''.join(random.choice(chars) for _ in range(6))
+    # Simple 4 digit numbers captcha
+    return ''.join(random.choice(string.digits) for _ in range(4))
 
 # Custom Education Theme CSS
 st.markdown("""
@@ -153,16 +153,16 @@ if not st.session_state.logged_in:
             reg_pass = st.text_input("Choose Password", type="password", key="r_pass")
             reg_repass = st.text_input("Re-enter Password", type="password", key="r_repass")
             
-            c1, c2 = st.columns([4, 1])
-            with c1:
-                st.markdown(f"<div style='background-color: #1e293b; padding: 10px; border-radius: 8px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 4px; color: #38bdf8;'>{st.session_state.captcha_code}</div>", unsafe_allow_html=True)
-            with c2:
-                st.markdown("<br>", unsafe_allow_html=True)
-                if st.button("🔄"):
+            # Integrated 4-digit Captcha Box with Refresh Icon inside it
+            cap_col1, cap_col2 = st.columns([4, 1])
+            with cap_col1:
+                st.markdown(f"<div style='background-color: #1e293b; padding: 12px; border-radius: 8px; text-align: center; font-size: 26px; font-weight: bold; letter-spacing: 8px; color: #38bdf8; border: 1px dashed #6366f1;'>{st.session_state.captcha_code}</div>", unsafe_allow_html=True)
+            with cap_col2:
+                if st.button("🔄", help="Refresh Captcha"):
                     st.session_state.captcha_code = generate_captcha()
                     st.rerun()
             
-            user_captcha = st.text_input("Enter Code Shown Above", key="r_captcha")
+            user_captcha = st.text_input("Enter 4-Digit Code Shown Above", key="r_captcha")
             
             if st.button("Register Account", type="primary", use_container_width=True):
                 clean_reg_user = reg_user.strip()
