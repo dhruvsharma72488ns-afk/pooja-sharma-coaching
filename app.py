@@ -186,12 +186,13 @@ else:
     # Compact Form inside Expander
     with st.expander("📝 Compact Student Data Feed Form", expanded=True):
         edit_data = {}
+        is_editing = False
         if st.session_state.edit_index is not None and st.session_state.edit_index < len(st.session_state.students_db):
             edit_data = st.session_state.students_db[st.session_state.edit_index]
+            is_editing = True
             st.info(f"Editing Student: {edit_data.get('Student Name', '')}")
 
         with st.form("student_form", clear_on_submit=False):
-            # 3-Column Compact Grid Layout
             fc1, fc2, fc3 = st.columns(3)
             
             with fc1:
@@ -221,9 +222,23 @@ else:
                 fee_date = st.date_input("Fee Date", value=default_date)
                 s_address = st.text_input("Address *", value=edit_data.get("Address", ""))
 
-            btn_label = "Update Student Data" if st.session_state.edit_index is not None else "Save Student Data"
-            submitted = st.form_submit_button(btn_label, type="primary", use_container_width=True)
+            # Action Buttons Row
+            btn_label = "Update Student Data" if is_editing else "Save Student Data"
             
+            if is_editing:
+                btn_c1, btn_c2 = st.columns([3, 1])
+                with btn_c1:
+                    submitted = st.form_submit_button(btn_label, type="primary", use_container_width=True)
+                with btn_c2:
+                    cancel_edit = st.form_submit_button("❌ Cancel Edit", use_container_width=True)
+            else:
+                submitted = st.form_submit_button(btn_label, type="primary", use_container_width=True)
+                cancel_edit = False
+
+            if cancel_edit:
+                st.session_state.edit_index = None
+                st.rerun()
+
             if submitted:
                 missing_fields = []
                 if not s_name.strip():
@@ -253,7 +268,7 @@ else:
                         "Fee Date": str(fee_date)
                     }
                     
-                    if st.session_state.edit_index is not None:
+                    if is_editing:
                         st.session_state.students_db[st.session_state.edit_index] = new_student
                         st.session_state.edit_index = None
                         st.success("Student data update ho gaya!")
