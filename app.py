@@ -22,11 +22,9 @@ def save_users(users):
         json.dump(users, f, indent=4)
 
 def generate_captcha():
-    # Difficult Alphanumeric Captcha (uppercase, lowercase, digits)
     chars = string.ascii_letters + string.digits
     return ''.join(random.choice(chars) for _ in range(6))
 
-# Hide Streamlit header
 st.markdown("""
 <style>
     .stAppHeader {
@@ -86,7 +84,6 @@ if not st.session_state.logged_in:
             reg_pass = st.text_input("Choose Password", type="password", key="r_pass")
             reg_repass = st.text_input("Re-enter Password", type="password", key="r_repass")
             
-            # Stylized Captcha Display & Refresh Button
             c1, c2 = st.columns([3, 1])
             with c1:
                 st.markdown(f"<div style='background-color: #262730; padding: 10px; border-radius: 8px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 4px; color: #00ffcc;'>{st.session_state.captcha_code}</div>", unsafe_allow_html=True)
@@ -106,4 +103,26 @@ if not st.session_state.logged_in:
                     st.error("Galat Code! Kripya sahi code enter karein.")
                     st.session_state.captcha_code = generate_captcha()
                 elif reg_user in users:
-                    st.error("Yeh Username pehle se maujood
+                    st.error("Yeh Username pehle se maujood hai! Dusra chunein.")
+                    st.session_state.captcha_code = generate_captcha()
+                else:
+                    users[reg_user] = {"password": reg_pass, "role": "Student"}
+                    save_users(users)
+                    st.success("Account successfully ban gaya! Ab aap Login kar sakte hain.")
+                    st.session_state.captcha_code = generate_captcha()
+                    st.session_state.page_choice = "🔐 Login"
+                    st.rerun()
+
+else:
+    st.sidebar.title(f"👤 {st.session_state.username}")
+    st.sidebar.write(f"**Role:** {users.get(st.session_state.username, {}).get('role', 'Student')}")
+    if st.sidebar.button("Logout", use_container_width=True):
+        st.session_state.logged_in = False
+        st.session_state.username = ""
+        st.rerun()
+
+    st.subheader("Welcome to Student Portal")
+    st.success(f"Hello {st.session_state.username}, aapka swagat hai!")
+    
+    st.markdown("### 📊 Registered System Users")
+    st.dataframe(users, use_container_width=True)
