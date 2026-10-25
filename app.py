@@ -41,6 +41,8 @@ if "page_choice" not in st.session_state:
     st.session_state.page_choice = "🔐 Login"
 if "captcha_code" not in st.session_state:
     st.session_state.captcha_code = generate_captcha()
+if "recovered_password" not in st.session_state:
+    st.session_state.recovered_password = None
 
 users = load_users()
 
@@ -51,9 +53,9 @@ st.markdown("---")
 if not st.session_state.logged_in:
     col1, col2, col3 = st.columns([1, 1.5, 1])
     with col2:
-        st.session_state.page_choice = st.radio("Choose Action", ["🔐 Login", "📝 Create Account"], horizontal=True, label_visibility="collapsed", index=0 if st.session_state.page_choice=="🔐 Login" else 1)
-        
-        st.markdown("<br>", unsafe_allow_html=True)
+        if st.session_state.page_choice in ["🔐 Login", "📝 Create Account"]:
+            st.session_state.page_choice = st.radio("Choose Action", ["🔐 Login", "📝 Create Account"], horizontal=True, label_visibility="collapsed", index=0 if st.session_state.page_choice=="🔐 Login" else 1)
+            st.markdown("<br>", unsafe_allow_html=True)
 
         if st.session_state.page_choice == "🔐 Login":
             st.subheader("🔐 Login to Your Account")
@@ -72,10 +74,38 @@ if not st.session_state.logged_in:
             
             st.markdown("<br>", unsafe_allow_html=True)
             if st.button("Forgot Password?", use_container_width=True):
-                if login_user in users:
-                    st.info(f"Aapka password hai: **{users[login_user]['password']}**")
+                st.session_state.page_choice = "🔑 Forgot Password Step 1"
+                st.session_state.recovered_password = None
+                st.rerun()
+
+        elif st.session_state.page_choice == "🔑 Forgot Password Step 1":
+            st.subheader("🔑 Enter Username to Recover Password")
+            
+            rec_user = st.text_input("Username", key="rec_user_input")
+            
+            if st.button("Find Password", type="primary", use_container_width=True):
+                if rec_user in users:
+                    st.session_state.recovered_password = users[rec_user]['password']
+                    st.session_state.page_choice = "🔑 Forgot Password Step 2"
+                    st.rerun()
                 else:
-                    st.warning("Pehle upar Username dalein, phir Forgot Password dabayein.")
+                    st.error("Yeh username system mein nahi mila!")
+            
+            st.markdown("<br>", unsafe_allow_html=True)
+            if st.button("🔙 Back to Login", use_container_width=True):
+                st.session_state.page_choice = "🔐 Login"
+                st.rerun()
+
+        elif st.session_state.page_choice == "🔑 Forgot Password Step 2":
+            st.subheader("🔒 Your Recovered Password")
+            
+            st.success(f"Your Password = **{st.session_state.recovered_password}**")
+            
+            st.markdown("<br>", unsafe_allow_html=True)
+            if st.button("🔙 Back to Login", type="primary", use_container_width=True):
+                st.session_state.recovered_password = None
+                st.session_state.page_choice = "🔐 Login"
+                st.rerun()
 
         else:
             st.subheader("📝 Create a New Account")
