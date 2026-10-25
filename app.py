@@ -50,7 +50,6 @@ if "captcha_code" not in st.session_state:
 if "recovered_password" not in st.session_state:
     st.session_state.recovered_password = None
 
-# Initialize databases
 if "users_db" not in st.session_state:
     st.session_state.users_db = load_data(USERS_FILE)
 if "students_db" not in st.session_state:
@@ -204,7 +203,6 @@ else:
             
             submitted = st.form_submit_button("Save Student Data", type="primary")
             if submitted:
-                # Validation checks with strict reminders
                 missing_fields = []
                 if not s_name.strip():
                     missing_fields.append("Student Name")
@@ -234,14 +232,9 @@ else:
                     }
                     st.session_state.students_db.append(new_student)
                     save_data(STUDENTS_FILE, st.session_state.students_db)
-                    st.success(f"Student '{s_name}' ka data safalpurvak save ho gaya hai!")
 
-    st.subheader("📚 Pooja Sharma Coaching - Admin Dashboard")
-    st.success("Swagat hai Pooja Mam! Aap yahan bacho ka poora data dekh aur manage kar sakti hain.")
+    st.markdown("### 📋 Students Details")
     
-    st.markdown("### 📋 Enrolled Students List")
-    
-    # Reload fresh from file to be 100% sure
     current_students = load_data(STUDENTS_FILE)
     if current_students and isinstance(current_students, list) and len(current_students) > 0:
         st.dataframe(current_students, use_container_width=True)
