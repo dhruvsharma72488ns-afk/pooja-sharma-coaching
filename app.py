@@ -3,6 +3,7 @@ import json
 import os
 import random
 import string
+import datetime
 
 st.set_page_config(page_title="Pooja Sharma Coaching Portal", page_icon="🎓", layout="wide")
 
@@ -49,7 +50,6 @@ if "captcha_code" not in st.session_state:
 if "recovered_password" not in st.session_state:
     st.session_state.recovered_password = None
 
-# Load databases
 if "users_db" not in st.session_state:
     st.session_state.users_db = load_data(USERS_FILE)
 else:
@@ -176,7 +176,6 @@ if not st.session_state.logged_in:
                     st.rerun()
 
 else:
-    # Sidebar customization for Pooja Mam
     with st.sidebar:
         st.markdown("### 👩‍🏫 WELCOME POOJA MAM")
         st.markdown("---")
@@ -184,24 +183,50 @@ else:
         
         with st.form("student_form", clear_on_submit=True):
             s_name = st.text_input("Student Name")
-            s_class = st.selectbox("Class", ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th", "11th", "12th"])
-            s_phone = st.text_input("Phone Number")
-            s_fees = st.text_input("Fee Status")
+            
+            # Class options with "Class" appended
+            class_options = [f"{i}th Class" if i > 3 else (f"{i}st Class" if i==1 else (f"{i}nd Class" if i==2 else f"{i}rd Class")) for i in range(1, 13)]
+            s_class = st.selectbox("Class", class_options)
+            
+            s_school = st.text_input("School Name")
+            s_subject = st.text_input("Subject")
+            s_phone = st.text_input("Student Phone Number")
+            
+            st.markdown("---")
+            st.markdown("**Parents Details**")
+            m_name = st.text_input("Mother Name")
+            m_phone = st.text_input("Mother Contact No")
+            f_name = st.text_input("Father Name")
+            f_phone = st.text_input("Father Contact No")
+            s_address = st.text_area("Address")
+            
+            st.markdown("---")
+            st.markdown("**Fee Details**")
+            fee_status = st.text_input("Fee Status / Amount")
+            fee_date = st.date_input("Fee Date", value=datetime.date.today())
             
             submitted = st.form_submit_button("Save Student Data", type="primary")
             if submitted:
                 if s_name and s_phone:
                     new_student = {
-                        "Name": s_name,
+                        "Student Name": s_name,
                         "Class": s_class,
+                        "School": s_school,
+                        "Subject": s_subject,
                         "Phone": s_phone,
-                        "Fees": s_fees
+                        "Mother Name": m_name,
+                        "Mother Contact": m_phone,
+                        "Father Name": f_name,
+                        "Father Contact": f_phone,
+                        "Address": s_address,
+                        "Fee Status": fee_status,
+                        "Fee Date": str(fee_date)
                     }
                     st.session_state.students_db.append(new_student)
                     save_data(STUDENTS_FILE, st.session_state.students_db)
                     st.success(f"Student {s_name} ka data save ho gaya!")
                 else:
-                    st.warning("Kripya Name aur Phone number bharein.")
+                    st.warning("Kripya Student Name aur Phone number bharein.")
 
         st.markdown("---")
         if st.button("🚪 Logout", use_container_width=True):
@@ -210,7 +235,7 @@ else:
             st.rerun()
 
     st.subheader("📚 Pooja Sharma Coaching - Admin Dashboard")
-    st.success("Swagat hai Pooja Mam! Aap yahan bacho ka data manage kar sakti hain.")
+    st.success("Swagat hai Pooja Mam! Aap yahan bacho ka poora data manage kar sakti hain.")
     
     st.markdown("### 📋 Enrolled Students List")
     if st.session_state.students_db:
