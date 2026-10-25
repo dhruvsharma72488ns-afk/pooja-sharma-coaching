@@ -31,7 +31,7 @@ def generate_captcha():
     chars = string.ascii_letters + string.digits
     return ''.join(random.choice(chars) for _ in range(6))
 
-# Custom Education Theme CSS
+# Custom Education Theme CSS with red glowing borders for missing fields prompt
 st.markdown("""
 <style>
     .stAppHeader {
@@ -141,7 +141,7 @@ if not st.session_state.logged_in:
             st.success(f"Your Password = **{st.session_state.recovered_password}**")
             
             st.markdown("<br>", unsafe_allow_html=True)
-            if st.button("🔙 Back to Login", type="primary", use_container_width=True):
+            if st.button("🔙 Back to Login", use_container_width=True):
                 st.session_state.recovered_password = None
                 st.session_state.page_choice = "🔐 Login"
                 st.rerun()
@@ -216,20 +216,20 @@ else:
             with fc1:
                 s_name = st.text_input("Student Name *", value=edit_data.get("Student Name", ""))
                 class_options = [f"{i}th Class" if i > 3 else (f"{i}st Class" if i==1 else (f"{i}nd Class" if i==2 else f"{i}rd Class")) for i in range(1, 13)]
-                default_class_idx = class_options.index(edit_data.get("Class")) if edit_data.get("Class") in class_options else 0
+                default_class_idx = class_options.index(edit_data.get("Class")) if edit_data.get("Class"] in class_options else 0
                 s_class = st.selectbox("Class *", class_options, index=default_class_idx)
                 s_school = st.text_input("School Name *", value=edit_data.get("School", ""))
-                s_subject = st.text_input("Subject", value=edit_data.get("Subject", ""))
+                s_subject = st.text_input("Subject *", value=edit_data.get("Subject", ""))
 
             with fc2:
                 s_phone = st.text_input("Student Phone Number", value=edit_data.get("Phone", ""))
-                m_name = st.text_input("Mother Name", value=edit_data.get("Mother Name", ""))
-                m_phone = st.text_input("Mother Contact No", value=edit_data.get("Mother Contact", ""))
+                m_name = st.text_input("Mother Name *", value=edit_data.get("Mother Name", ""))
+                m_phone = st.text_input("Mother Contact No *", value=edit_data.get("Mother Contact", ""))
                 f_name = st.text_input("Father Name", value=edit_data.get("Father Name", ""))
 
             with fc3:
                 f_phone = st.text_input("Father Contact No", value=edit_data.get("Father Contact", ""))
-                fee_status = st.text_input("Fee Status / Amount", value=edit_data.get("Fee Status", ""))
+                fee_status = st.text_input("Fee Status / Amount *", value=edit_data.get("Fee Status", ""))
                 
                 default_date = datetime.date.today()
                 if edit_data.get("Fee Date"):
@@ -237,7 +237,7 @@ else:
                         default_date = datetime.datetime.strptime(edit_data.get("Fee Date"), "%Y-%m-%d").date()
                     except:
                         pass
-                fee_date = st.date_input("Fee Date", value=default_date)
+                fee_date = st.date_input("Fee Date *", value=default_date)
                 s_address = st.text_input("Address *", value=edit_data.get("Address", ""))
 
             btn_label = "Update Student Data" if is_editing else "Save Student Data"
@@ -262,13 +262,23 @@ else:
                     missing_fields.append("Student Name")
                 if not s_school.strip():
                     missing_fields.append("School Name")
+                if not s_subject.strip():
+                    missing_fields.append("Subject")
+                if not m_name.strip():
+                    missing_fields.append("Mother Name")
+                if not m_phone.strip():
+                    missing_fields.append("Mother Contact No")
+                if not fee_status.strip():
+                    missing_fields.append("Fee Status / Amount")
+                if not fee_date:
+                    missing_fields.append("Fee Date")
                 if not s_address.strip():
                     missing_fields.append("Address")
                 if not s_phone.strip() and not m_phone.strip() and not f_phone.strip():
                     missing_fields.append("At least one Phone Number")
                 
                 if missing_fields:
-                    st.error(f"⚠️ Kripya yeh zaroori fields bharein: {', '.join(missing_fields)}")
+                    st.error(f"🚨 Zaroori fields khali hain! Kripya inhe bharein: **{', '.join(missing_fields)}**")
                 else:
                     new_student = {
                         "Student Name": s_name.strip(),
