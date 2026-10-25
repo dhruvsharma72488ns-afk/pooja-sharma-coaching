@@ -48,11 +48,9 @@ if "captcha_code" not in st.session_state:
 if "recovered_password" not in st.session_state:
     st.session_state.recovered_password = None
 
-# Load users and keep them in session state so they never get lost during session
 if "users_db" not in st.session_state:
     st.session_state.users_db = load_users()
 else:
-    # Sync with file if file has more users
     file_users = load_users()
     st.session_state.users_db.update(file_users)
 
@@ -108,6 +106,11 @@ if not st.session_state.logged_in:
                     st.rerun()
                 else:
                     st.error("Yeh username system mein nahi mila! Kripya sahi username dalein.")
+            
+            st.markdown("<br>", unsafe_allow_html=True)
+            if st.button("🔙 Back to Login", use_container_width=True):
+                st.session_state.page_choice = "🔐 Login"
+                st.rerun()
 
         elif st.session_state.page_choice == "🔑 Forgot Password Step 2":
             st.subheader("🔒 Your Recovered Password")
