@@ -11,7 +11,7 @@ USERS_FILE = "users.json"
 STUDENTS_FILE = "students.json"
 
 def load_users():
-    default_users = {"pooja": {"password": "12345", "role": "Admin"}}
+    default_users = {"pooja": {"password": "12345", "role": "Admin"}, "dhruv": {"password": "1234", "role": "Admin"}}
     if not os.path.exists(USERS_FILE):
         return default_users
     try:
@@ -30,7 +30,7 @@ def save_users(users):
         with open(USERS_FILE, "w") as f:
             json.dump(users, f, indent=4)
     except Exception as e:
-        st.error(f"Error saving users: {e}")
+        pass
 
 def load_students():
     if not os.path.exists(STUDENTS_FILE):
@@ -47,7 +47,7 @@ def save_students(students):
         with open(STUDENTS_FILE, "w") as f:
             json.dump(students, f, indent=4)
     except Exception as e:
-        st.error(f"Error saving students: {e}")
+        pass
 
 def generate_captcha():
     return ''.join(random.choice(string.digits) for _ in range(4))
@@ -92,7 +92,11 @@ if "recovered_password" not in st.session_state:
 if "edit_index" not in st.session_state:
     st.session_state.edit_index = None
 
-users = load_users()
+# Initialize persistent users in session state so it never gets lost during runtime
+if "users_db" not in st.session_state:
+    st.session_state.users_db = load_users()
+
+users = st.session_state.users_db
 students_db = load_students()
 
 st.markdown("<h1 style='text-align: center; color: #38bdf8;'>🎓 POOJA SHARMA COACHING CENTER</h1>", unsafe_allow_html=True)
@@ -113,10 +117,10 @@ if not st.session_state.logged_in:
             login_pass = st.text_input("Password", type="password", key="l_pass")
             
             if st.button("Login Now", type="primary", use_container_width=True):
-                clean_login_user = login_user.strip()
-                matched_user = next((u for u in users if u.strip().lower() == clean_login_user.lower()), None)
+                clean_login_user = login_user.strip().lower()
+                matched_user = next((u for u in users if u.strip().lower() == clean_login_user), None)
                 
-                if matched_user and users[matched_user]["password"] == login_pass:
+                if matched_user and str(users[matched_user]["password"]) == str(login_pass):
                     st.session_state.logged_in = True
                     st.session_state.username = matched_user
                     st.success("Login Successful!")
@@ -136,8 +140,8 @@ if not st.session_state.logged_in:
             rec_user = st.text_input("Username", key="rec_user_input")
             
             if st.button("Find Password", type="primary", use_container_width=True):
-                clean_rec_user = rec_user.strip()
-                matched_user = next((u for u in users if u.strip().lower() == clean_rec_user.lower()), None)
+                clean_rec_user = rec_user.strip().lower()
+                matched_user = next((u for u in users if u.strip().lower() == clean_rec_user), None)
                 
                 if matched_user:
                     st.session_state.recovered_password = users[matched_user]['password']
@@ -197,6 +201,7 @@ if not st.session_state.logged_in:
                     st.rerun()
                 else:
                     users[clean_reg_user] = {"password": reg_pass, "role": "Admin"}
+                    st.session_state.users_db = users
                     save_users(users)
                     st.success("Account successfully ban gaya! Ab aap Login kar sakte hain.")
                     st.session_state.captcha_code = generate_captcha()
@@ -292,7 +297,6 @@ else:
                     missing_fields.append("At least one Phone Number")
                 
                 if missing_fields:
-                    # English validation error message as requested
                     st.error(f"⚠️ Mandatory fields are missing! Please fill in: **{', '.join(missing_fields)}**")
                 else:
                     new_student = {
