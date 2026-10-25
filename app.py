@@ -19,7 +19,6 @@ def load_users():
             data = json.load(f)
             if not isinstance(data, dict):
                 return default_users
-            # Ensure default pooja account always exists
             if "pooja" not in data:
                 data["pooja"] = {"password": "12345", "role": "Admin"}
             return data
@@ -93,7 +92,6 @@ if "recovered_password" not in st.session_state:
 if "edit_index" not in st.session_state:
     st.session_state.edit_index = None
 
-# Load persistent databases
 users = load_users()
 students_db = load_students()
 
@@ -294,7 +292,8 @@ else:
                     missing_fields.append("At least one Phone Number")
                 
                 if missing_fields:
-                    st.error(f"🚨 Zaroori fields khali hain! Kripya inhe bharein: **{', '.join(missing_fields)}**")
+                    # English validation error message as requested
+                    st.error(f"⚠️ Mandatory fields are missing! Please fill in: **{', '.join(missing_fields)}**")
                 else:
                     new_student = {
                         "Student Name": s_name.strip(),
@@ -314,10 +313,10 @@ else:
                     if is_editing:
                         students_db[st.session_state.edit_index] = new_student
                         st.session_state.edit_index = None
-                        st.success("Student data update ho gaya!")
+                        st.success("Student data updated successfully!")
                     else:
                         students_db.append(new_student)
-                        st.success("Student data save ho gaya!")
+                        st.success("Student data saved successfully!")
                     
                     save_students(students_db)
                     st.rerun()
@@ -353,7 +352,7 @@ else:
                         save_students(students_db)
                         if st.session_state.edit_index == idx:
                             st.session_state.edit_index = None
-                        st.success("Student data delete ho gaya!")
+                        st.success("Student data deleted successfully!")
                         st.rerun()
     else:
-        st.info("Abhi koi student data add nahi kiya gaya hai.")
+        st.info("No student data has been added yet.")
