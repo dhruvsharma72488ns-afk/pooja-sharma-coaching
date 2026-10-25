@@ -92,11 +92,9 @@ if "recovered_password" not in st.session_state:
 if "edit_index" not in st.session_state:
     st.session_state.edit_index = None
 
-# Ensure users database is loaded from persistent JSON and stored in session state
 if "users_db" not in st.session_state:
     st.session_state.users_db = load_users()
 else:
-    # Sync disk changes if any
     disk_users = load_users()
     for k, v in disk_users.items():
         if k not in st.session_state.users_db:
@@ -112,7 +110,14 @@ st.markdown("---")
 if not st.session_state.logged_in:
     st.markdown("<div style='max-width: 450px; margin: auto;'>", unsafe_allow_html=True)
     
-    st.session_state.page_choice = st.radio("Choose Action", ["🔐 Login", "📝 Create Account"], horizontal=True, label_visibility="collapsed")
+    # Radio selection mapped with session state to switch seamlessly
+    radio_index = 0 if st.session_state.page_choice == "🔐 Login" else 1
+    action_choice = st.radio("Choose Action", ["🔐 Login", "📝 Create Account"], horizontal=True, label_visibility="collapsed", index=radio_index)
+    
+    if action_choice != st.session_state.page_choice and action_choice in ["🔐 Login", "📝 Create Account"]:
+        st.session_state.page_choice = action_choice
+        st.rerun()
+
     st.markdown("<br>", unsafe_allow_html=True)
 
     if st.session_state.page_choice == "🔐 Login":
@@ -123,7 +128,6 @@ if not st.session_state.logged_in:
         
         if st.button("Login Now", type="primary", use_container_width=True):
             clean_login_user = login_user.strip()
-            # Check matching user case-insensitively or exact
             matched_user = next((u for u in users if u.strip() == clean_login_user or u.strip().lower() == clean_login_user.lower()), None)
             
             if matched_user and str(users[matched_user]["password"]) == str(login_pass):
@@ -179,7 +183,6 @@ if not st.session_state.logged_in:
         reg_pass = st.text_input("Choose Password", type="password", key="r_pass")
         reg_repass = st.text_input("Re-enter Password", type="password", key="r_repass")
         
-        # Integrated Captcha with Refresh Button
         cap_col1, cap_col2 = st.columns([4, 1])
         with cap_col1:
             st.markdown(f"<div style='background-color: #1e293b; padding: 12px; border-radius: 8px; text-align: center; font-size: 26px; font-weight: bold; letter-spacing: 8px; color: #38bdf8; border: 1px dashed #6366f1;'>{st.session_state.captcha_code}</div>", unsafe_allow_html=True)
@@ -195,7 +198,7 @@ if not st.session_state.logged_in:
             if not clean_reg_user or not reg_pass or not reg_repass or not user_captcha:
                 st.warning("⚠️ Please fill in all fields!")
             elif reg_pass != reg_repass:
-                st.error("❌ Passwords do not match!")
+                st.error("❌ Password mismatch! Passwords do not match.")
                 st.session_state.captcha_code = generate_captcha()
                 st.rerun()
             elif user_captcha != st.session_state.captcha_code:
@@ -210,7 +213,7 @@ if not st.session_state.logged_in:
                 users[clean_reg_user] = {"password": reg_pass, "role": "Admin"}
                 st.session_state.users_db = users
                 save_users(users)
-                st.success("✅ Account created successfully! You can now log in.")
+                st.success("✅ Account created successfully! Redirecting to login...")
                 st.session_state.captcha_code = generate_captcha()
                 st.session_state.page_choice = "🔐 Login"
                 st.rerun()
