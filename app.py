@@ -7,23 +7,24 @@ import string
 st.set_page_config(page_title="Pooja Sharma Coaching Portal", page_icon="🎓", layout="wide")
 
 USERS_FILE = "users.json"
+STUDENTS_FILE = "students.json"
 
-def load_users():
-    if not os.path.exists(USERS_FILE):
+def load_data(filename):
+    if not os.path.exists(filename):
         return {}
     try:
-        with open(USERS_FILE, "r") as f:
+        with open(filename, "r") as f:
             data = json.load(f)
-            return data if isinstance(data, dict) else {}
+            return data if isinstance(data, (dict, list)) else {}
     except:
         return {}
 
-def save_users(users):
+def save_data(filename, data):
     try:
-        with open(USERS_FILE, "w") as f:
-            json.dump(users, f, indent=4)
+        with open(filename, "w") as f:
+            json.dump(data, f, indent=4)
     except Exception as e:
-        st.error(f"Error saving user: {e}")
+        st.error(f"Error saving data: {e}")
 
 def generate_captcha():
     chars = string.ascii_letters + string.digits
@@ -48,13 +49,21 @@ if "captcha_code" not in st.session_state:
 if "recovered_password" not in st.session_state:
     st.session_state.recovered_password = None
 
+# Load databases
 if "users_db" not in st.session_state:
-    st.session_state.users_db = load_users()
+    st.session_state.users_db = load_data(USERS_FILE)
 else:
-    file_users = load_users()
-    st.session_state.users_db.update(file_users)
+    st.session_state.users_db.update(load_data(USERS_FILE))
+
+if "students_db" not in st.session_state:
+    st.session_state.students_db = load_data(STUDENTS_FILE)
+else:
+    if isinstance(load_data(STUDENTS_FILE), list):
+        st.session_state.students_db = load_data(STUDENTS_FILE)
 
 users = st.session_state.users_db
+if not isinstance(st.session_state.students_db, list):
+    st.session_state.students_db = []
 
 st.markdown("<h1 style='text-align: center; color: #1e3a8a;'>🎓 POOJA SHARMA COACHING CENTER</h1>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; color: #6b7280;'>Classes 1st to 12th | Excellence in Education</p>", unsafe_allow_html=True)
@@ -158,8 +167,8 @@ if not st.session_state.logged_in:
                     st.session_state.captcha_code = generate_captcha()
                     st.rerun()
                 else:
-                    users[clean_reg_user] = {"password": reg_pass, "role": "Student"}
-                    save_users(users)
+                    users[clean_reg_user] = {"password": reg_pass, "role": "Admin"}
+                    save_data(USERS_FILE, users)
                     st.session_state.users_db = users
                     st.success("Account successfully ban gaya! Ab aap Login kar sakte hain.")
                     st.session_state.captcha_code = generate_captcha()
@@ -167,15 +176,44 @@ if not st.session_state.logged_in:
                     st.rerun()
 
 else:
-    st.sidebar.title(f"👤 {st.session_state.username}")
-    st.sidebar.write(f"**Role:** {users.get(st.session_state.username, {}).get('role', 'Student')}")
-    if st.sidebar.button("Logout", use_container_width=True):
-        st.session_state.logged_in = False
-        st.session_state.username = ""
-        st.rerun()
+    # Sidebar customization for Pooja Mam
+    with st.sidebar:
+        st.markdown("### 👩‍🏫 WELCOME POOJA MAM")
+        st.markdown("---")
+        st.markdown("#### 📝 Student Data Feed Form")
+        
+        with st.form("student_form", clear_on_submit=True):
+            s_name = st.text_input("Student Name")
+            s_class = st.selectbox("Class", ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th", "11th", "12th"])
+            s_phone = st.text_input("Phone Number")
+            s_fees = st.text_input("Fee Status")
+            
+            submitted = st.form_submit_button("Save Student Data", type="primary")
+            if submitted:
+                if s_name and s_phone:
+                    new_student = {
+                        "Name": s_name,
+                        "Class": s_class,
+                        "Phone": s_phone,
+                        "Fees": s_fees
+                    }
+                    st.session_state.students_db.append(new_student)
+                    save_data(STUDENTS_FILE, st.session_state.students_db)
+                    st.success(f"Student {s_name} ka data save ho gaya!")
+                else:
+                    st.warning("Kripya Name aur Phone number bharein.")
 
-    st.subheader("Welcome to Student Portal")
-    st.success(f"Hello {st.session_state.username}, aapka swagat hai!")
+        st.markdown("---")
+        if st.button("🚪 Logout", use_container_width=True):
+            st.session_state.logged_in = False
+            st.session_state.username = ""
+            st.rerun()
+
+    st.subheader("📚 Pooja Sharma Coaching - Admin Dashboard")
+    st.success("Swagat hai Pooja Mam! Aap yahan bacho ka data manage kar sakti hain.")
     
-    st.markdown("### 📊 Registered System Users")
-    st.dataframe(users, use_container_width=True)
+    st.markdown("### 📋 Enrolled Students List")
+    if st.session_state.students_db:
+        st.dataframe(st.session_state.students_db, use_container_width=True)
+    else:
+        st.info("Abhi koi student data add nahi kiya gaya hai. Left side ke form se add karein.")
