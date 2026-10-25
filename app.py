@@ -1,6 +1,7 @@
 import streamlit as st
 import json
 import os
+import random
 
 st.set_page_config(page_title="Pooja Sharma Coaching Portal", page_icon="🎓", layout="wide")
 
@@ -32,6 +33,10 @@ if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 if "username" not in st.session_state:
     st.session_state.username = ""
+if "page_choice" not in st.session_state:
+    st.session_state.page_choice = "🔐 Login"
+if "captcha_code" not in st.session_state:
+    st.session_state.captcha_code = str(random.randint(1000, 9999))
 
 users = load_users()
 
@@ -42,12 +47,11 @@ st.markdown("---")
 if not st.session_state.logged_in:
     col1, col2, col3 = st.columns([1, 1.5, 1])
     with col2:
-        # Navigation option between Login and Create Account
-        choice = st.radio("Choose Action", ["🔐 Login", "📝 Create Account"], horizontal=True, label_visibility="collapsed")
+        st.session_state.page_choice = st.radio("Choose Action", ["🔐 Login", "📝 Create Account"], horizontal=True, label_visibility="collapsed", index=0 if st.session_state.page_choice=="🔐 Login" else 1)
         
         st.markdown("<br>", unsafe_allow_html=True)
 
-        if choice == "🔐 Login":
+        if st.session_state.page_choice == "🔐 Login":
             st.subheader("🔐 Login to Your Account")
             
             login_user = st.text_input("Username", key="l_user")
@@ -74,17 +78,31 @@ if not st.session_state.logged_in:
             
             reg_user = st.text_input("Choose Username", key="r_user")
             reg_pass = st.text_input("Choose Password", type="password", key="r_pass")
-            reg_role = st.selectbox("Select Role", ["Student", "Teacher", "Admin"])
+            reg_repass = st.text_input("Re-enter Password", type="password", key="r_repass")
+            
+            # Captcha Section
+            st.markdown(f"### 🔏 Captcha Code: `{st.session_state.captcha_code}`")
+            user_captcha = st.text_input("Enter Captcha Code Above", key="r_captcha")
             
             if st.button("Register Account", type="primary", use_container_width=True):
-                if not reg_user or not reg_pass:
+                if not reg_user or not reg_pass or not reg_repass or not user_captcha:
                     st.warning("Sabhi fields bharna zaroori hai!")
+                elif reg_pass != reg_repass:
+                    st.error("Passwords match nahi kar rahe hain!")
+                elif user_captcha != st.session_state.captcha_code:
+                    st.error("Galat Captcha! Kripya sahi captcha dalein.")
+                    st.session_state.captcha_code = str(random.randint(1000, 9999))
                 elif reg_user in users:
                     st.error("Yeh Username pehle se maujood hai! Dusra chunein.")
+                    st.session_state.captcha_code = str(random.randint(1000, 9999))
                 else:
-                    users[reg_user] = {"password": reg_pass, "role": reg_role}
+                    users[reg_user] = {"password": reg_pass, "role": "Student"}
                     save_users(users)
                     st.success("Account successfully ban gaya! Ab aap Login kar sakte hain.")
+                    # Reset captcha and switch back to login page automatically
+                    st.session_state.captcha_code = str(random.randint(1000, 9999))
+                    st.session_state.page_choice = "🔐 Login"
+                    st.rerun()
 
 else:
     st.sidebar.title(f"👤 {st.session_state.username}")
