@@ -9,9 +9,9 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Permanent Login Credentials & Session State
+# Initialize Session State securely
 if "users" not in st.session_state:
-    st.session_state.users = st.secrets.get("users", {"pooja": "12345"})
+    st.session_state.users = {"pooja": "12345"}
 
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
@@ -20,19 +20,17 @@ if "username" not in st.session_state:
 if "page" not in st.session_state:
     st.session_state.page = "Login"
 
-# Student Records Storage
 if "students" not in st.session_state:
     st.session_state.students = []
 
 if "edit_index" not in st.session_state:
     st.session_state.edit_index = None
 
-# Captcha Setup
+# Captcha Numbers
 if "num1" not in st.session_state or "num2" not in st.session_state:
     st.session_state.num1 = random.randint(1, 9)
     st.session_state.num2 = random.randint(1, 9)
 
-# Header
 st.title("📚 POOJA SHARMA COACHING CENTER")
 st.markdown("**Classes 1st to 12th | Excellence in Education**")
 st.markdown("---")
@@ -52,8 +50,8 @@ if not st.session_state.logged_in:
         st.subheader("🔑 Login to Your Account")
         col1, _ = st.columns([1, 1])
         with col1:
-            username = st.text_input("Username")
-            password = st.text_input("Password", type="password")
+            username = st.text_input("Username", key="login_user")
+            password = st.text_input("Password", type="password", key="login_pass")
             
             if st.button("Login Now", type="primary"):
                 if username in st.session_state.users and st.session_state.users[username] == password:
@@ -67,7 +65,7 @@ if not st.session_state.logged_in:
         st.subheader("📝 Create New Account")
         col1, _ = st.columns([1, 1])
         with col1:
-            with st.form("register_form"):
+            with st.form("register_form_safe"):
                 new_user = st.text_input("New Username")
                 new_pass = st.text_input("Password", type="password")
                 re_pass = st.text_input("Re-enter Password", type="password")
@@ -113,7 +111,7 @@ else:
         "11th Class", "12th Class"
     ]
 
-    # --- EDIT MODE CHECK ---
+    # --- EDIT MODE ---
     if st.session_state.edit_index is not None:
         idx = st.session_state.edit_index
         student = st.session_state.students[idx]
@@ -149,18 +147,10 @@ else:
 
             if update_btn:
                 st.session_state.students[idx] = {
-                    "Student Name": e_name,
-                    "Class": e_class,
-                    "Student Phone": e_phone,
-                    "Father Name": e_fname,
-                    "Father Contact": e_fphone,
-                    "Mother Name": e_mname,
-                    "Mother Contact": e_mphone,
-                    "Address": e_address,
-                    "Total Fees": e_fee_total,
-                    "Paid Fees": e_fee_paid,
-                    "Fee Date": e_fee_date,
-                    "Fee Status": e_fee_status
+                    "Student Name": e_name, "Class": e_class, "Student Phone": e_phone,
+                    "Father Name": e_fname, "Father Contact": e_fphone, "Mother Name": e_mname,
+                    "Mother Contact": e_mphone, "Address": e_address, "Total Fees": e_fee_total,
+                    "Paid Fees": e_fee_paid, "Fee Date": e_fee_date, "Fee Status": e_fee_status
                 }
                 st.session_state.edit_index = None
                 st.success("✅ Record successfully update ho gaya!")
@@ -201,28 +191,20 @@ else:
                     st.error("⚠️ Student Name aur Father's Name bharna zaroori hai!")
                 else:
                     st.session_state.students.append({
-                        "Student Name": s_name,
-                        "Class": s_class,
-                        "Student Phone": s_phone,
-                        "Father Name": f_name,
-                        "Father Contact": f_phone,
-                        "Mother Name": m_name,
-                        "Mother Contact": m_phone,
-                        "Address": address,
-                        "Total Fees": total_fees,
-                        "Paid Fees": paid_fees,
-                        "Fee Date": fee_date,
-                        "Fee Status": fee_status
+                        "Student Name": s_name, "Class": s_class, "Student Phone": s_phone,
+                        "Father Name": f_name, "Father Contact": f_phone, "Mother Name": m_name,
+                        "Mother Contact": m_phone, "Address": address, "Total Fees": total_fees,
+                        "Paid Fees": paid_fees, "Fee Date": fee_date, "Fee Status": fee_status
                     })
                     st.success(f"🎉 {s_name} ka record successfully save ho gaya!")
 
     st.markdown("---")
     
-    # --- DISPLAY ALL RECORDS WITH EDIT OPTION ---
+    # --- DISPLAY ALL RECORDS ---
     st.subheader(f"📋 All Registered Students ({len(st.session_state.students)})")
     
     if len(st.session_state.students) == 0:
-        st.info("Abhi tak koi student record add nahi kiya gaya hai. Upar form bharkar add karein.")
+        st.info("Abhi tak koi student record add nahi kiya gaya hai.")
     else:
         for i, stu in enumerate(st.session_state.students):
             with st.expander(f"🎓 {stu['Student Name']} | {stu['Class']} | Fee Status: {stu['Fee Status']} (Date: {stu['Fee Date']})"):
