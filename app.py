@@ -56,7 +56,6 @@ if not st.session_state.logged_in:
             if st.button("Login Now", type="primary"):
                 if username in st.session_state.users and st.session_state.users[username] == password:
                     st.session_state.logged_in = True
-                    # Hamesha Pooja Mam show karega
                     st.session_state.username = "Pooja Mam"
                     st.rerun()
                 else:
@@ -104,7 +103,7 @@ else:
         st.session_state.page = "Login"
         st.rerun()
 
-    st.success(f"### 🎉 Welcome {st.session_state.username}!")[cite: 12]
+    st.success(f"### 🎉 Welcome {st.session_state.username}!")
 
     class_options = [
         "1st Class", "2nd Class", "3rd Class", "4th Class", "5th Class",
@@ -192,7 +191,6 @@ else:
             submit_btn = st.form_submit_button("✅ Submit Student Record", type="primary")
 
             if submit_btn:
-                # Validation checking for mandatory fields
                 has_error = False
                 if not s_name:
                     st.error("⚠️ Student Name bharna zaroori hai!")
