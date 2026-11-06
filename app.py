@@ -118,26 +118,29 @@ else:
         st.subheader(f"✏️ Edit Student Record: {student['Student Name']}")
         
         with st.form("edit_student_form"):
-            c1, c2, c3 = st.columns(3)
+            st.markdown("### 🎓 Student & Parents Details")
+            c1, c2 = st.columns(2)
             with c1:
                 e_name = st.text_input("Student Name", value=student["Student Name"])
                 e_class = st.selectbox("Class", class_options, index=class_options.index(student["Class"]))
                 e_phone = st.text_input("Student Phone Number", value=student["Student Phone"])
             with c2:
+                e_mname = st.text_input("Mother's Name", value=student["Mother Name"])
+                e_mphone = st.text_input("Mother's Contact Number", value=student["Mother Contact"])
                 e_fname = st.text_input("Father's Name", value=student["Father Name"])
                 e_fphone = st.text_input("Father's Contact Number", value=student["Father Contact"])
-                e_mname = st.text_input("Mother's Name", value=student["Mother Name"])
+
+            st.markdown("### 💰 Fee Structure & Calendar")
+            c3, c4 = st.columns(2)
             with c3:
-                e_mphone = st.text_input("Mother's Contact Number", value=student["Mother Contact"])
-                e_fee_total = st.number_input("Total Fees (₹)", min_value=0, value=int(student["Total Fees"]))
-                e_fee_paid = st.number_input("Fees Paid (₹)", min_value=0, value=int(student["Paid Fees"]))
-            
-            c4, c5 = st.columns(2)
+                e_fee_total = st.number_input("Total Fee Structure (₹)", min_value=0, value=int(student["Total Fees"]))
+                e_fee_paid = st.number_input("Fees Submitted (₹)", min_value=0, value=int(student["Paid Fees"]))
             with c4:
-                e_address = st.text_area("Student Address", value=student["Address"])
-            with c5:
-                e_fee_date = st.date_input("Fee Submission Date", value=student["Fee Date"])
+                e_fee_date = st.date_input("Fee Submission Date (Calendar)", value=student["Fee Date"])
                 e_fee_status = st.selectbox("Fee Status", ["Paid", "Partial", "Pending"], index=["Paid", "Partial", "Pending"].index(student["Fee Status"]))
+
+            st.markdown("### 🏠 Address")
+            e_address = st.text_area("Student Address", value=student["Address"])
 
             col_save, col_cancel = st.columns(2)
             with col_save:
@@ -148,9 +151,10 @@ else:
             if update_btn:
                 st.session_state.students[idx] = {
                     "Student Name": e_name, "Class": e_class, "Student Phone": e_phone,
-                    "Father Name": e_fname, "Father Contact": e_fphone, "Mother Name": e_mname,
-                    "Mother Contact": e_mphone, "Address": e_address, "Total Fees": e_fee_total,
-                    "Paid Fees": e_fee_paid, "Fee Date": e_fee_date, "Fee Status": e_fee_status
+                    "Mother Name": e_mname, "Mother Contact": e_mphone,
+                    "Father Name": e_fname, "Father Contact": e_fphone,
+                    "Total Fees": e_fee_total, "Paid Fees": e_fee_paid,
+                    "Fee Date": e_fee_date, "Fee Status": e_fee_status, "Address": e_address
                 }
                 st.session_state.edit_index = None
                 st.success("✅ Record successfully update ho gaya!")
@@ -163,26 +167,29 @@ else:
     else:
         st.subheader("➕ Add New Student Details & Fee Record")
         with st.form("add_student_form", clear_on_submit=True):
-            c1, c2, c3 = st.columns(3)
+            st.markdown("### 🎓 Student & Parents Details")
+            c1, c2 = st.columns(2)
             with c1:
                 s_name = st.text_input("Student Name *")
                 s_class = st.selectbox("Select Class *", class_options)
                 s_phone = st.text_input("Student Phone Number")
             with c2:
+                m_name = st.text_input("Mother's Name")
+                m_phone = st.text_input("Mother's Contact Number")
                 f_name = st.text_input("Father's Name *")
                 f_phone = st.text_input("Father's Contact Number *")
-                m_name = st.text_input("Mother's Name")
+
+            st.markdown("### 💰 Fee Structure & Calendar")
+            c3, c4 = st.columns(2)
             with c3:
-                m_phone = st.text_input("Mother's Contact Number")
                 total_fees = st.number_input("Total Fee Structure (₹)", min_value=0, step=100)
                 paid_fees = st.number_input("Fees Submitted (₹)", min_value=0, step=100)
-            
-            c4, c5 = st.columns(2)
             with c4:
-                address = st.text_area("Full Address")
-            with c5:
                 fee_date = st.date_input("Fee Submission Date (Calendar)", value=datetime.date.today())
                 fee_status = st.selectbox("Fee Status", ["Paid", "Partial", "Pending"])
+
+            st.markdown("### 🏠 Address")
+            address = st.text_area("Full Address")
 
             submit_btn = st.form_submit_button("✅ Submit Student Record", type="primary")
 
@@ -192,9 +199,10 @@ else:
                 else:
                     st.session_state.students.append({
                         "Student Name": s_name, "Class": s_class, "Student Phone": s_phone,
-                        "Father Name": f_name, "Father Contact": f_phone, "Mother Name": m_name,
-                        "Mother Contact": m_phone, "Address": address, "Total Fees": total_fees,
-                        "Paid Fees": paid_fees, "Fee Date": fee_date, "Fee Status": fee_status
+                        "Mother Name": m_name, "Mother Contact": m_phone,
+                        "Father Name": f_name, "Father Contact": f_phone,
+                        "Total Fees": total_fees, "Paid Fees": paid_fees,
+                        "Fee Date": fee_date, "Fee Status": fee_status, "Address": address
                     })
                     st.success(f"🎉 {s_name} ka record successfully save ho gaya!")
 
@@ -208,22 +216,19 @@ else:
     else:
         for i, stu in enumerate(st.session_state.students):
             with st.expander(f"🎓 {stu['Student Name']} | {stu['Class']} | Fee Status: {stu['Fee Status']} (Date: {stu['Fee Date']})"):
-                col_a, col_b, col_c = st.columns(3)
+                col_a, col_b = st.columns(2)
                 with col_a:
                     st.write(f"**Student Name:** {stu['Student Name']}")
                     st.write(f"**Class:** {stu['Class']}")
                     st.write(f"**Student Phone:** {stu['Student Phone']}")
-                    st.write(f"**Address:** {stu['Address']}")
+                    st.write(f"**Mother's Name:** {stu['Mother Name']} | **Contact:** {stu['Mother Contact']}")
+                    st.write(f"**Father's Name:** {stu['Father Name']} | **Contact:** {stu['Father Contact']}")
                 with col_b:
-                    st.write(f"**Father's Name:** {stu['Father Name']}")
-                    st.write(f"**Father's Contact:** {stu['Father Contact']}")
-                    st.write(f"**Mother's Name:** {stu['Mother Name']}")
-                    st.write(f"**Mother's Contact:** {stu['Mother Contact']}")
-                with col_c:
                     st.write(f"**Total Fees:** ₹{stu['Total Fees']}")
                     st.write(f"**Fees Paid:** ₹{stu['Paid Fees']}")
-                    st.write(f"**Fee Date:** {stu['Fee Date']}")
-                    st.write(f"**Status:** {stu['Fee Status']}")
+                    st.write(f"**Fee Submission Date:** {stu['Fee Date']}")
+                    st.write(f"**Fee Status:** {stu['Fee Status']}")
+                    st.write(f"**Address:** {stu['Address']}")
                     
                     if st.button(f"✏️ Edit {stu['Student Name']}", key=f"edit_{i}"):
                         st.session_state.edit_index = i
