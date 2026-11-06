@@ -56,7 +56,7 @@ if not st.session_state.logged_in:
             if st.button("Login Now", type="primary"):
                 if username in st.session_state.users and st.session_state.users[username] == password:
                     st.session_state.logged_in = True
-                    st.session_state.username = "Pooja Mam"
+                    st.session_state.username = "POOJA MAM"
                     st.rerun()
                 else:
                     st.error("❌ Invalid Username or Password")
@@ -103,7 +103,7 @@ else:
         st.session_state.page = "Login"
         st.rerun()
 
-    st.success(f"### 🎉 Welcome {st.session_state.username}!")
+    st.success(f"### 🎉 Welcome {st.session_state.username}!")[cite: 12, 13]
 
     class_options = [
         "1st Class", "2nd Class", "3rd Class", "4th Class", "5th Class",
@@ -239,6 +239,14 @@ else:
                     st.write(f"**Fee Status:** {stu['Fee Status']}")
                     st.write(f"**Address:** {stu['Address']}")
                     
-                    if st.button(f"✏️ Edit {stu['Student Name']}", key=f"edit_{i}"):
-                        st.session_state.edit_index = i
-                        st.rerun()
+                    # Buttons for Edit and Delete
+                    b_col1, b_col2 = st.columns(2)
+                    with b_col1:
+                        if st.button(f"✏️ Edit {stu['Student Name']}", key=f"edit_{i}"):
+                            st.session_state.edit_index = i
+                            st.rerun()
+                    with b_col2:
+                        if st.button(f"🗑️ Delete {stu['Student Name']}", key=f"delete_{i}"):
+                            st.session_state.students.pop(i)
+                            st.success("✅ Student record delete kar diya gaya hai!")
+                            st.rerun()
