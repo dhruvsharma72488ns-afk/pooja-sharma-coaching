@@ -56,7 +56,8 @@ if not st.session_state.logged_in:
             if st.button("Login Now", type="primary"):
                 if username in st.session_state.users and st.session_state.users[username] == password:
                     st.session_state.logged_in = True
-                    st.session_state.username = "Pooja Mam" if username.lower() == "pooja" else username
+                    # Hamesha Pooja Mam show karega
+                    st.session_state.username = "Pooja Mam"
                     st.rerun()
                 else:
                     st.error("❌ Invalid Username or Password")
@@ -103,7 +104,7 @@ else:
         st.session_state.page = "Login"
         st.rerun()
 
-    st.success(f"### 🎉 Welcome {st.session_state.username}!")
+    st.success(f"### 🎉 Welcome {st.session_state.username}!")[cite: 12]
 
     class_options = [
         "1st Class", "2nd Class", "3rd Class", "4th Class", "5th Class",
@@ -122,15 +123,15 @@ else:
             st.markdown("### 🎓 Student & Parents Details")
             c1, c2 = st.columns(2)
             with c1:
-                e_name = st.text_input("Student Name", value=student["Student Name"])
-                e_class = st.selectbox("Class", class_options, index=class_options.index(student["Class"]))
+                e_name = st.text_input("Student Name *", value=student["Student Name"])
+                e_class = st.selectbox("Select Class *", class_options, index=class_options.index(student["Class"]))
                 e_phone = st.text_input("Student Phone Number", value=student["Student Phone"])
-                e_mname = st.text_input("Mother's Name", value=student["Mother Name"])
-                e_mphone = st.text_input("Mother's Contact Number", value=student["Mother Contact"])
+                e_mname = st.text_input("Mother's Name *", value=student["Mother Name"])
+                e_mphone = st.text_input("Mother's Contact Number *", value=student["Mother Contact"])
             with c2:
                 e_fname = st.text_input("Father's Name", value=student["Father Name"])
                 e_fphone = st.text_input("Father's Contact Number", value=student["Father Contact"])
-                e_address = st.text_input("Address (Chhota box)", value=student["Address"])
+                e_address = st.text_input("Address *", value=student["Address"])
 
             st.markdown("### 💰 Fee Structure & Calendar")
             c3, c4 = st.columns(2)
@@ -165,19 +166,19 @@ else:
     # --- ADD NEW STUDENT FORM ---
     else:
         st.subheader("➕ Add New Student Details & Fee Record")
-        with st.form("add_student_form", clear_on_submit=True):
+        with st.form("add_student_form", clear_on_submit=False):
             st.markdown("### 🎓 Student & Parents Details")
             c1, c2 = st.columns(2)
             with c1:
                 s_name = st.text_input("Student Name *")
                 s_class = st.selectbox("Select Class *", class_options)
                 s_phone = st.text_input("Student Phone Number")
-                m_name = st.text_input("Mother's Name")
-                m_phone = st.text_input("Mother's Contact Number")
+                m_name = st.text_input("Mother's Name *")
+                m_phone = st.text_input("Mother's Contact Number *")
             with c2:
-                f_name = st.text_input("Father's Name *")
-                f_phone = st.text_input("Father's Contact Number *")
-                address = st.text_input("Address (Chhota box)")
+                f_name = st.text_input("Father's Name")
+                f_phone = st.text_input("Father's Contact Number")
+                address = st.text_input("Address *")
 
             st.markdown("### 💰 Fee Structure & Calendar")
             c3, c4 = st.columns(2)
@@ -191,9 +192,22 @@ else:
             submit_btn = st.form_submit_button("✅ Submit Student Record", type="primary")
 
             if submit_btn:
-                if not s_name or not f_name:
-                    st.error("⚠️ Student Name aur Father's Name bharna zaroori hai!")
-                else:
+                # Validation checking for mandatory fields
+                has_error = False
+                if not s_name:
+                    st.error("⚠️ Student Name bharna zaroori hai!")
+                    has_error = True
+                if not m_name:
+                    st.error("⚠️ Mother's Name bharna zaroori hai!")
+                    has_error = True
+                if not m_phone:
+                    st.error("⚠️ Mother's Contact Number bharna zaroori hai!")
+                    has_error = True
+                if not address:
+                    st.error("⚠️ Address bharna zaroori hai!")
+                    has_error = True
+
+                if not has_error:
                     st.session_state.students.append({
                         "Student Name": s_name, "Class": s_class, "Student Phone": s_phone,
                         "Mother Name": m_name, "Mother Contact": m_phone,
