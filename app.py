@@ -1,7 +1,6 @@
 import streamlit as st
 import random
 import datetime
-import pandas as pd
 
 st.set_page_config(
     page_title="Pooja Sharma Coaching Center", 
@@ -10,7 +9,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Permanent Login Credentials + Session Users
+# Permanent Login Credentials & Session State
 if "users" not in st.session_state:
     st.session_state.users = st.secrets.get("users", {"pooja": "12345"})
 
@@ -68,30 +67,33 @@ if not st.session_state.logged_in:
         st.subheader("📝 Create New Account")
         col1, _ = st.columns([1, 1])
         with col1:
-            new_user = st.text_input("New Username")
-            new_pass = st.text_input("Password", type="password")
-            re_pass = st.text_input("Re-enter Password", type="password")
-            
-            st.write(f"**Captcha:** `{st.session_state.num1} + {st.session_state.num2}` kitna hota hai?")
-            captcha_ans = st.text_input("Captcha Answer")
-            
-            if st.button("Register Account", type="primary"):
-                correct_ans = st.session_state.num1 + st.session_state.num2
-                if not new_user or not new_pass or not re_pass or not captcha_ans:
-                    st.warning("⚠️ Kripya saare fields bharein!")
-                elif new_pass != re_pass:
-                    st.error("❌ Password aur Re-password match nahi ho rahe!")
-                elif captcha_ans.strip() != str(correct_ans):
-                    st.error("❌ Galat Captcha! Dobara try karein.")
-                elif new_user in st.session_state.users:
-                    st.error("⚠️ Yeh Username pehle se bana hua hai!")
-                else:
-                    st.session_state.users[new_user] = new_pass
-                    st.session_state.num1 = random.randint(1, 9)
-                    st.session_state.num2 = random.randint(1, 9)
-                    st.success("✅ Account ban gaya! Ab Login karein.")
-                    st.session_state.page = "Login"
-                    st.rerun()
+            with st.form("register_form"):
+                new_user = st.text_input("New Username")
+                new_pass = st.text_input("Password", type="password")
+                re_pass = st.text_input("Re-enter Password", type="password")
+                
+                st.write(f"**Captcha:** `{st.session_state.num1} + {st.session_state.num2}` kitna hota hai?")
+                captcha_ans = st.text_input("Captcha Answer")
+                
+                register_btn = st.form_submit_button("Register Account", type="primary")
+                
+                if register_btn:
+                    correct_ans = st.session_state.num1 + st.session_state.num2
+                    if not new_user or not new_pass or not re_pass or not captcha_ans:
+                        st.warning("⚠️ Kripya saare fields bharein!")
+                    elif new_pass != re_pass:
+                        st.error("❌ Password aur Re-password match nahi ho rahe!")
+                    elif captcha_ans.strip() != str(correct_ans):
+                        st.error("❌ Galat Captcha! Dobara try karein.")
+                    elif new_user in st.session_state.users:
+                        st.error("⚠️ Yeh Username pehle se bana hua hai!")
+                    else:
+                        st.session_state.users[new_user] = new_pass
+                        st.session_state.num1 = random.randint(1, 9)
+                        st.session_state.num2 = random.randint(1, 9)
+                        st.success("✅ Account ban gaya! Ab aap Login kar sakte hain.")
+                        st.session_state.page = "Login"
+                        st.rerun()
 
 # ==========================================
 # 2. MAIN PORTAL (AFTER LOGIN)
