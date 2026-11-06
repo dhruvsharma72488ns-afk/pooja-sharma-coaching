@@ -1,6 +1,8 @@
 import streamlit as st
 import random
 import datetime
+import json
+import os
 
 st.set_page_config(
     page_title="Pooja Sharma Coaching Center", 
@@ -9,9 +11,29 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+USERS_FILE = "users_db.json"
+
+def load_users():
+    default_users = {"pooja": "12345"}
+    if os.path.exists(USERS_FILE):
+        try:
+            with open(USERS_FILE, "r") as f:
+                saved = json.load(f)
+                default_users.update(saved)
+        except Exception:
+            pass
+    return default_users
+
+def save_users(users_dict):
+    try:
+        with open(USERS_FILE, "w") as f:
+            json.dump(users_dict, f)
+    except Exception:
+        pass
+
 # Initialize Session State securely
 if "users" not in st.session_state:
-    st.session_state.users = {"pooja": "12345"}
+    st.session_state.users = load_users()
 
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
@@ -34,59 +56,101 @@ st.markdown("**Classes 1st to 12th | Excellence in Education**")
 st.markdown("---")
 
 # ==========================================
-# 1. LOGIN & CREATE ACCOUNT SECTION
+# 1. LOGIN, CREATE ACCOUNT & FORGOT PASSWORD
 # ==========================================
 if not st.session_state.logged_in:
-    choice = st.sidebar.radio(
-        "Navigation", 
-        ["Login", "Create Account"], 
-        index=0 if st.session_state.page == "Login" else 1
-    )
-    st.session_state.page = choice
+    # Sidebar navigation (Login / Create Account)
+    if st.session_state.page in ["Login", "Create Account"]:
+        choice = st.sidebar.radio(
+            "Navigation", 
+            ["Login", "Create Account"], 
+            index=0 if st.session_state.page == "Login" else 1
+        )
+        st.session_state.page = choice
 
+    # --- LOGIN PAGE ---
     if st.session_state.page == "Login":
         st.subheader("🔑 Login to Your Account")
         col1, _ = st.columns([1, 1])
         with col1:
-            username = st.text_input("Username", key="login_user")
-            password = st.text_input("Password", type="password", key="login_pass")
+            username = st.text_input("Username", key="login_user").strip()
+            password = st.text_input("Password", type="password", key="login_pass").strip()
             
-            if st.button("Login Now", type="primary"):
-                if username in st.session_state.users and st.session_state.users[username] == password:
-                    st.session_state.logged_in = True
+            btn_col1, btn_col2 = st.columns(2)
+            with btn_col1:
+                if st.button("Login Now", type="primary", use_container_width=True):
+                    # Reload users to make sure latest saved accounts are checked
+                    current_users = load_users()
+                    st.session_state.users.update(current_users)
+                    
+                    if username in st.session_state.users and st.session_state.users[username] == password:
+                        st.session_state.logged_in = True
+                        st.rerun()
+                    else:
+                        st.error("❌ Invalid Username or Password")
+            with btn_col2:
+                if st.button("Forgot Password?", use_container_width=True):
+                    st.session_state.page = "Forgot Password"
                     st.rerun()
-                else:
-                    st.error("❌ Invalid Username or Password")
 
+    # --- FORGOT PASSWORD PAGE ---
+    elif st.session_state.page == "Forgot Password":
+        st.subheader("🔐 Recover Your Password")
+        col1, _ = st.columns([1, 1])
+        with col1:
+            recover_user = st.text_input("Enter Your Registered Username").strip()
+            
+            if st.button("Show Password", type="primary"):
+                current_users = load_users()
+                st.session_state.users.update(current_users)
+                
+                if not recover_user:
+                    st.warning("⚠️ Kripya apna Username dalein!")
+                elif recover_user in st.session_state.users:
+                    found_pass = st.session_state.users[recover_user]
+                    st.success(f"✅ **Your Password is:** `{found_pass}`")
+                else:
+                    st.error("❌ Yeh Username registered nahi hai! Sahi Username dalein.")
+            
+            st.markdown("---")
+            if st.button("⬅️ Back to Login"):
+                st.session_state.page = "Login"
+                st.rerun()
+
+    # --- CREATE ACCOUNT PAGE ---
     elif st.session_state.page == "Create Account":
         st.subheader("📝 Create New Account")
         col1, _ = st.columns([1, 1])
         with col1:
             with st.form("register_form_safe"):
-                new_user = st.text_input("New Username")
-                new_pass = st.text_input("Password", type="password")
-                re_pass = st.text_input("Re-enter Password", type="password")
+                new_user = st.text_input("New Username").strip()
+                new_pass = st.text_input("Password", type="password").strip()
+                re_pass = st.text_input("Re-enter Password", type="password").strip()
                 
                 st.write(f"**Captcha:** `{st.session_state.num1} + {st.session_state.num2}` kitna hota hai?")
-                captcha_ans = st.text_input("Captcha Answer")
+                captcha_ans = st.text_input("Captcha Answer").strip()
                 
                 register_btn = st.form_submit_button("Register Account", type="primary")
                 
                 if register_btn:
                     correct_ans = st.session_state.num1 + st.session_state.num2
+                    current_users = load_users()
+                    st.session_state.users.update(current_users)
+
                     if not new_user or not new_pass or not re_pass or not captcha_ans:
                         st.warning("⚠️ Kripya saare fields bharein!")
                     elif new_pass != re_pass:
                         st.error("❌ Password aur Re-password match nahi ho rahe!")
-                    elif captcha_ans.strip() != str(correct_ans):
+                    elif captcha_ans != str(correct_ans):
                         st.error("❌ Galat Captcha! Dobara try karein.")
                     elif new_user in st.session_state.users:
                         st.error("⚠️ Yeh Username pehle se bana hua hai!")
                     else:
                         st.session_state.users[new_user] = new_pass
+                        save_users(st.session_state.users)
                         st.session_state.num1 = random.randint(1, 9)
                         st.session_state.num2 = random.randint(1, 9)
-                        st.success("✅ Account ban gaya! Ab aap Login kar sakte hain.")
+                        st.success("✅ Account securely ban gaya! Ab Login karein.")
                         st.session_state.page = "Login"
                         st.rerun()
 
@@ -236,7 +300,6 @@ else:
                     st.write(f"**Fee Status:** {stu['Fee Status']}")
                     st.write(f"**Address:** {stu['Address']}")
                     
-                    # Buttons for Edit and Delete
                     b_col1, b_col2 = st.columns(2)
                     with b_col1:
                         if st.button(f"✏️ Edit {stu['Student Name']}", key=f"edit_{i}"):
