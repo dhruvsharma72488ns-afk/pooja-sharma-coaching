@@ -103,7 +103,7 @@ else:
         st.session_state.page = "Login"
         st.rerun()
 
-    st.success(f"### 🎉 Welcome {st.session_state.username}!")[cite: 12, 13]
+    st.success(f"### 🎉 Welcome {st.session_state.username}!")
 
     class_options = [
         "1st Class", "2nd Class", "3rd Class", "4th Class", "5th Class",
