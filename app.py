@@ -15,8 +15,6 @@ if "users" not in st.session_state:
 
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
-if "username" not in st.session_state:
-    st.session_state.username = ""
 if "page" not in st.session_state:
     st.session_state.page = "Login"
 
@@ -56,7 +54,6 @@ if not st.session_state.logged_in:
             if st.button("Login Now", type="primary"):
                 if username in st.session_state.users and st.session_state.users[username] == password:
                     st.session_state.logged_in = True
-                    st.session_state.username = "POOJA MAM"
                     st.rerun()
                 else:
                     st.error("❌ Invalid Username or Password")
@@ -97,13 +94,13 @@ if not st.session_state.logged_in:
 # 2. MAIN PORTAL (AFTER LOGIN)
 # ==========================================
 else:
-    st.sidebar.success(f"👋 Welcome, {st.session_state.username}")
+    st.sidebar.success("👋 Welcome, POOJA MAM")
     if st.sidebar.button("🚪 Logout"):
         st.session_state.logged_in = False
         st.session_state.page = "Login"
         st.rerun()
 
-    st.success(f"### 🎉 Welcome {st.session_state.username}!")
+    st.success("### 🎉 WELCOME POOJA MAM!")
 
     class_options = [
         "1st Class", "2nd Class", "3rd Class", "4th Class", "5th Class",
